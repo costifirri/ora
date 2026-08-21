@@ -2,7 +2,7 @@
 // In produzione la chiamata va all'API Anthropic; senza chiave si usano le risposte offline.
 
 const API_URL = 'https://api.anthropic.com/v1/messages'
-const MODEL = 'claude-sonnet-5'
+const MODEL = 'claude-opus-5'
 
 export function buildSystem(contextBlock, name) {
   return [
@@ -19,12 +19,17 @@ export function buildSystem(contextBlock, name) {
 }
 
 // history: [{from:'me'|'ora', text}] — si inviano gli ultimi 10 messaggi.
+// Il primo messaggio inviato all'API deve avere ruolo user: si scartano
+// i messaggi di Ora in testa (es. il saluto iniziale).
 // Risposte sotto i 25 caratteri vengono scartate in favore del fallback.
 export async function askOra({ apiKey, system, history }) {
   const messages = history.slice(-10).map(m => ({
     role: m.from === 'me' ? 'user' : 'assistant',
     content: m.text,
   }))
+  while (messages.length && messages[0].role === 'assistant') messages.shift()
+  if (!messages.length) return ''
+
   const res = await fetch(API_URL, {
     method: 'POST',
     headers: {
@@ -33,10 +38,32 @@ export async function askOra({ apiKey, system, history }) {
       'anthropic-version': '2023-06-01',
       'anthropic-dangerous-direct-browser-access': 'true',
     },
-    body: JSON.stringify({ model: MODEL, max_tokens: 500, system, messages }),
+    body: JSON.stringify({
+      model: MODEL,
+      // Il tetto copre anche il thinking del modello: 1024 lascia spazio
+      // alle 2-4 frasi richieste dal prompt senza troncare.
+      max_tokens: 1024,
+      output_config: { effort: 'low' },
+      system,
+      messages,
+    }),
   })
-  if (!res.ok) throw new Error('API ' + res.status)
+  if (!res.ok) {
+    let reason = `errore ${res.status}`
+    if (res.status === 401) reason = 'chiave API non valida'
+    else if (res.status === 429) reason = 'troppe richieste, riprova tra poco'
+    else if (res.status === 400) {
+      try {
+        const body = await res.json()
+        reason = body?.error?.message || reason
+      } catch { /* corpo non leggibile: si tiene il codice */ }
+    }
+    const err = new Error(reason)
+    err.status = res.status
+    throw err
+  }
   const out = await res.json()
+  if (out.stop_reason === 'refusal') return ''
   const txt = (out.content || []).filter(b => b.type === 'text').map(b => b.text).join('').trim()
   return txt.length < 25 ? '' : txt
 }

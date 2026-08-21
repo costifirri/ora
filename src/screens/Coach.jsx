@@ -43,6 +43,11 @@ export default function Coach({ app }) {
             Adesso Ora è offline: risponde con frasi preparate. Con una chiave API (in Tu), capisce qualsiasi cosa scrivi.
           </div>
         )}
+        {liveAI && s.aiError && (
+          <div className="offline-note">
+            Ora non ha potuto rispondere davvero ({s.aiError}): questa è una frase preparata.
+          </div>
+        )}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 4 }}>
           {PROMPTS.map(prompt => (
             <button key={prompt} className="prompt-chip" onClick={() => sendText(prompt)}>{prompt}</button>

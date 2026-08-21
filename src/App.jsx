@@ -26,7 +26,7 @@ const EPHEMERAL = {
   pausaStep: 0, pausaT: 0,
   seraStep: 0, seraT: 0, seraDraft: '',
   openPerson: null, convoWho: null, convoTone: null, convoUnsaid: '',
-  draft: '', typing: false, toast: null,
+  draft: '', typing: false, toast: null, aiError: null,
 }
 
 export default function App() {
@@ -184,10 +184,10 @@ export default function App() {
     if (!text.trim()) return
     const history = [...p.messages, { from: 'me', text }]
     setP({ messages: history })
-    setS({ draft: '', typing: true })
+    setS({ draft: '', typing: true, aiError: null })
     const fallback = answerFor(text)
-    const finish = reply => {
-      setS({ typing: false })
+    const finish = (reply, aiError = null) => {
+      setS({ typing: false, aiError })
       setP(prev => ({ messages: [...prev.messages, { from: 'ora', text: reply }] }))
     }
     if (!liveAI) {
@@ -197,7 +197,7 @@ export default function App() {
     }
     askOra({ apiKey: p.settings.apiKey, system: buildSystem(contextBlock(), name), history })
       .then(answer => finish(answer || fallback))
-      .catch(() => finish(fallback))
+      .catch(err => finish(fallback, err.message === 'Failed to fetch' ? 'connessione assente' : err.message))
   }
 
   const app = {
