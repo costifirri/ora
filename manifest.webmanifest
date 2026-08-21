@@ -1,0 +1,16 @@
+{
+  "name": "Ora — mente, corpo, legami",
+  "short_name": "Ora",
+  "description": "Un flusso guidato della giornata: meditare, fermarsi prima di reagire, conoscersi, conversazioni vere.",
+  "lang": "it",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5ead8",
+  "theme_color": "#f5ead8",
+  "icons": [
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
