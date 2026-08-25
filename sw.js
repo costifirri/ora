@@ -1,5 +1,5 @@
 // Service worker minimale: cache-first per gli asset, network-first per il documento.
-const CACHE = 'ora-v7'
+const CACHE = 'ora-v8'
 
 self.addEventListener('install', e => {
   self.skipWaiting()
@@ -14,7 +14,9 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url)
   if (e.request.method !== 'GET') return
+  // Le chiamate a servizi vivi non passano mai dalla cache.
   if (url.hostname === 'api.anthropic.com') return
+  if (url.hostname.endsWith('googleapis.com') || url.hostname.endsWith('firebaseio.com')) return
 
   if (e.request.mode === 'navigate') {
     e.respondWith(
