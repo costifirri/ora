@@ -59,8 +59,14 @@ export function loadPersisted() {
       days,
       // Una lista vuota è una scelta legittima; solo l'assenza va seminata.
       people: Array.isArray(data.people) ? data.people : structuredClone(DEFAULT_PEOPLE),
-      // La chiave arriva sempre dal cassetto locale, mai dal blob salvato.
-      settings: { ...DEFAULT_PERSISTED.settings, ...(data.settings || {}), apiKey: readApiKey() },
+      // La chiave arriva dal cassetto locale. Se è ancora vuoto perché questo
+      // dispositivo viene da una versione precedente, la recupero dal vecchio
+      // blob: il primo salvataggio la sposta nel cassetto e la toglie da lì.
+      settings: {
+        ...DEFAULT_PERSISTED.settings,
+        ...(data.settings || {}),
+        apiKey: readApiKey() || data.settings?.apiKey || '',
+      },
     }
   } catch {
     return structuredClone(DEFAULT_PERSISTED)
