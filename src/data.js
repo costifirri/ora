@@ -89,6 +89,7 @@ export const MOVE_SLOTS = [
 ]
 
 export const PEOPLE = [
+  { name: 'Compagno', meta: 'ogni giorno · il legame più facile da dare per scontato', initial: 'C', opener: 'Con chi ti vive accanto le conversazioni diventano organizzazione: turni, spesa, cosa si mangia. Prova a chiedergli una cosa che non c’entra niente con la casa: “C’è qualcosa che ti pesa in questo periodo e che non mi hai detto?” Poi lascia il silenzio, anche se è lungo.' },
   { name: 'Giulia', meta: 'sorella · ultimo scambio 9 giorni fa', initial: 'G', opener: 'Le hai risposto a monosillabi lunedì. Prova con una cosa vera: “In queste settimane sono stata poco presente. Come stai davvero?”' },
   { name: 'Marco', meta: 'collega · solo conversazioni di lavoro', initial: 'M', opener: 'Con lui parli solo di scadenze. Una domanda che apre: “Cosa ti sta piacendo in questo periodo, fuori da qui?”' },
   { name: 'Elena', meta: 'amica · vi vedete giovedì', initial: 'E', opener: 'Giovedì prova a dire una cosa che non hai ancora detto a nessuno di questo mese. Poi taci e ascolta.' },
