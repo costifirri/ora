@@ -1,5 +1,7 @@
-// Persistenza locale: check-in, note della sera, conversazioni, flusso per giorno,
-// percorso, chat e impostazioni. Tutto resta sul dispositivo (localStorage).
+// Persistenza locale: check-in, note della sera, conversazioni, persone, flusso
+// per giorno, percorso, chat e impostazioni. Tutto resta sul dispositivo.
+
+import { DEFAULT_PEOPLE } from './data.js'
 
 const KEY = 'ora-state-v1'
 
@@ -15,6 +17,7 @@ export const DEFAULT_PERSISTED = {
   seraNotes: [],       // {text, ts} — restano solo sul dispositivo, mai inviate all'AI
   convoLog: [],        // {who, tone, unsaid, ts}
   pauseLog: [],        // {choice, ts} — risposte scelte nel Momento difficile
+  people: structuredClone(DEFAULT_PEOPLE), // {id, name, meta, opener} — modificabili
   intention: '',       // intenzione settimanale "se X, allora Y"
   weeklyReport: null,  // {text, ts} — ultimo report generato
   days: {},            // 'YYYY-MM-DD' -> {done, water, moveWhen, movePos, moveMoved, listened, moveMin, sleep, meals}
@@ -44,6 +47,8 @@ export function loadPersisted() {
       ...structuredClone(DEFAULT_PERSISTED),
       ...data,
       days,
+      // Una lista vuota è una scelta legittima; solo l'assenza va seminata.
+      people: Array.isArray(data.people) ? data.people : structuredClone(DEFAULT_PEOPLE),
       settings: { ...DEFAULT_PERSISTED.settings, ...(data.settings || {}) },
     }
   } catch {

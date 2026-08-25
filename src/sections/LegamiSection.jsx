@@ -1,8 +1,24 @@
-import { Check, Minus, Plus } from 'lucide-react'
-import { PEOPLE, QUESTIONS, CONVO_TONES, TONES } from '../data.js'
+import { Check, Minus, Plus, Pencil, Sparkles } from 'lucide-react'
+import { QUESTIONS, CONVO_TONES, TONES, GENERIC_OPENER, initialOf } from '../data.js'
 
 export default function LegamiSection({ app }) {
-  const { p, s, setS, setP, day, patchDay, markDone, flash, sendText } = app
+  const { p, s, setS, setP, day, patchDay, markDone, flash, sendText, makeOpener } = app
+  const people = p.people
+
+  const updatePerson = (id, patch) =>
+    setP(prev => ({ people: prev.people.map(x => (x.id === id ? { ...x, ...patch } : x)) }))
+
+  const removePerson = id => {
+    setP(prev => ({ people: prev.people.filter(x => x.id !== id) }))
+    setS({ editPerson: null, openPerson: null })
+    flash('Tolta dalla lista. Le conversazioni già salvate restano.')
+  }
+
+  const addPerson = () => {
+    const id = `p-${Date.now()}`
+    setP(prev => ({ people: [...prev.people, { id, name: '', meta: '', opener: '' }] }))
+    setS({ openPerson: id, editPerson: id })
+  }
 
   const saveConvo = () => {
     if (!s.convoWho || !s.convoTone) { flash('Scegli con chi hai parlato e com’è andata.'); return }
@@ -43,44 +59,97 @@ export default function LegamiSection({ app }) {
 
       <div className="card surface">
         <div className="h-card" style={{ marginBottom: 4 }}>Le persone</div>
-        <div style={{ fontSize: 13, color: 'rgba(32,30,29,.6)', marginBottom: 12 }}>Tocca un nome per un modo di iniziare.</div>
+        <div style={{ fontSize: 13, color: 'rgba(32,30,29,.6)', marginBottom: 12 }}>
+          I tuoi nomi, non i miei. Tocca per un modo di iniziare, la matita per cambiarli.
+        </div>
+
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {PEOPLE.map((person, i) => {
-            const open = s.openPerson === i
+          {people.map(person => {
+            const open = s.openPerson === person.id
+            const editing = s.editPerson === person.id
             return (
               <div
-                key={person.name}
+                key={person.id}
                 className="person-card"
                 style={{ borderColor: open ? 'rgba(122,138,94,.4)' : 'rgba(32,30,29,.12)', background: open ? 'var(--sage-050)' : 'transparent' }}
               >
-                <button className="person-head" onClick={() => setS(prev => ({ openPerson: prev.openPerson === i ? null : i }))}>
+                <button
+                  className="person-head"
+                  onClick={() => setS(prev => ({ openPerson: prev.openPerson === person.id ? null : person.id, editPerson: null }))}
+                >
                   <span className="person-avatar" style={{ background: open ? 'var(--sage-100)' : 'var(--neutral-tint)', color: open ? 'var(--sage-700)' : '#474238' }}>
-                    {person.initial}
+                    {initialOf(person.name)}
                   </span>
                   <span style={{ flex: 1, minWidth: 0 }}>
-                    <span style={{ display: 'block', fontSize: 15, fontWeight: 600 }}>{person.name}</span>
-                    <span style={{ display: 'block', fontSize: 12, color: 'var(--muted)' }}>{person.meta}</span>
+                    <span style={{ display: 'block', fontSize: 15, fontWeight: 600 }}>{person.name || 'Senza nome'}</span>
+                    <span style={{ display: 'block', fontSize: 12, color: 'var(--muted)' }}>{person.meta || 'tocca la matita per dire chi è'}</span>
                   </span>
                   {open ? <Minus size={15} strokeWidth={2.75} color="rgba(32,30,29,.4)" /> : <Plus size={15} strokeWidth={2.75} color="rgba(32,30,29,.4)" />}
                 </button>
-                {open && (
+
+                {open && !editing && (
                   <div style={{ padding: '2px 0 14px' }}>
-                    <div className="opener-panel">{person.opener}</div>
-                    <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+                    <div className="opener-panel">{person.opener || GENERIC_OPENER}</div>
+                    <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
                       <button
-                        style={{ flex: 1, minHeight: 46, border: 0, borderRadius: 999, background: 'var(--sage-500)', color: 'var(--surface)', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}
+                        style={{ flex: 1, minWidth: 140, minHeight: 46, border: 0, borderRadius: 999, background: 'var(--sage-500)', color: 'var(--surface)', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}
                         onClick={() => {
-                          sendText(`Vorrei parlare con ${person.name} ma non so come iniziare.`)
+                          sendText(`Vorrei parlare con ${person.name || 'questa persona'} ma non so come iniziare.`)
                           setS({ screen: 'coach' })
                         }}
                       >
                         Provala con Ora
                       </button>
                       <button
-                        className="btn-outline" style={{ minHeight: 46 }}
-                        onClick={() => { setS({ openPerson: null }); flash('Te lo ricordo domani, senza insistere.') }}
+                        className="btn-outline" style={{ minHeight: 46, display: 'flex', alignItems: 'center', gap: 8 }}
+                        onClick={() => setS({ editPerson: person.id })}
                       >
-                        Più tardi
+                        <Pencil size={14} strokeWidth={2.75} /> Modifica
+                      </button>
+                    </div>
+                    <button
+                      className="step-link"
+                      style={{ color: 'var(--sage-700)', marginTop: 6, display: 'flex', alignItems: 'center', gap: 6 }}
+                      onClick={() => makeOpener(person)}
+                      disabled={s.openerLoading === person.id}
+                    >
+                      <Sparkles size={14} strokeWidth={2.75} />
+                      {s.openerLoading === person.id ? 'Ora ci sta pensando…' : 'Chiedi a Ora un modo di iniziare'}
+                    </button>
+                  </div>
+                )}
+
+                {open && editing && (
+                  <div style={{ padding: '2px 0 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <input
+                      className="apikey-input"
+                      type="text"
+                      value={person.name}
+                      placeholder="Nome"
+                      aria-label="Nome"
+                      onChange={e => updatePerson(person.id, { name: e.target.value })}
+                    />
+                    <input
+                      className="apikey-input"
+                      type="text"
+                      value={person.meta}
+                      placeholder="Chi è per te (sorella, collega, amica…)"
+                      aria-label="Relazione"
+                      onChange={e => updatePerson(person.id, { meta: e.target.value })}
+                    />
+                    <div style={{ display: 'flex', gap: 8, marginTop: 2 }}>
+                      <button
+                        style={{ flex: 1, minHeight: 46, border: 0, borderRadius: 999, background: 'var(--sage-500)', color: 'var(--surface)', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}
+                        onClick={() => setS({ editPerson: null })}
+                      >
+                        Fatto
+                      </button>
+                      <button
+                        className="btn-outline"
+                        style={{ minHeight: 46, color: 'var(--terra-600)', borderColor: 'rgba(198,113,57,.4)' }}
+                        onClick={() => removePerson(person.id)}
+                      >
+                        Togli
                       </button>
                     </div>
                   </div>
@@ -89,6 +158,10 @@ export default function LegamiSection({ app }) {
             )
           })}
         </div>
+
+        <button className="btn-outline" style={{ width: '100%', minHeight: 48, marginTop: 12 }} onClick={addPerson}>
+          + Aggiungi una persona
+        </button>
       </div>
 
       <div className="card sand">
@@ -111,12 +184,12 @@ export default function LegamiSection({ app }) {
         </div>
         <div style={{ fontSize: 12, color: 'rgba(32,30,29,.5)', fontWeight: 600, marginBottom: 8 }}>Con chi</div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
-          {PEOPLE.map(person => {
+          {people.filter(x => x.name).map(person => {
             const on = s.convoWho === person.name
             const t = TONES.sage
             return (
               <button
-                key={person.name} className="chip"
+                key={person.id} className="chip"
                 style={{ background: on ? t.solid : t.bg, color: on ? 'var(--surface)' : t.fg, borderColor: on ? t.solid : t.border }}
                 onClick={() => setS({ convoWho: person.name })}
               >

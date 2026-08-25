@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { FLOW, COURSE, CUES, HARD, CORE, HELPERS, PEOPLE, SEED_TRIGGERS, SEED_WEEK, TRIGGER_TAGS, breath, answerFor } from './data.js'
-import { buildSystem, askOra, weeklyReport } from './ai.js'
+import { FLOW, COURSE, CUES, HARD, CORE, HELPERS, SEED_TRIGGERS, SEED_WEEK, TRIGGER_TAGS, breath, answerFor } from './data.js'
+import { buildSystem, askOra, weeklyReport, askOpener } from './ai.js'
 import { loadPersisted, savePersisted, todayKey, emptyDay, exportAll } from './storage.js'
 import Oggi from './screens/Oggi.jsx'
 import Te from './screens/Te.jsx'
@@ -24,7 +24,8 @@ const EPHEMERAL = {
   running: false, t: 0, sessionKind: 'respiro', sessionMins: 8, cue: 0, flowKey: null, courseIdx: null,
   pausaStep: 0, pausaT: 0,
   seraStep: 0, seraT: 0, seraDraft: '',
-  openPerson: null, convoWho: null, convoTone: null, convoUnsaid: '',
+  openPerson: null, editPerson: null, openerLoading: null,
+  convoWho: null, convoTone: null, convoUnsaid: '',
   draft: '', typing: false, toast: null, aiError: null, reportLoading: false,
 }
 
@@ -192,7 +193,7 @@ export default function App() {
       `- volte in cui negli ultimi 7 giorni ha scelto una risposta invece di reagire (Momento difficile): ${weekResponses.length}` + (weekResponses.length ? ` (${weekResponses.map(x => x.choice).join('; ')})` : ''),
       p.intention ? `- la sua intenzione della settimana: ${p.intention}` : null,
       '- cosa la calma: ' + HELPERS.map(h => h.label).join(', '),
-      '- persone su cui vuole lavorare: ' + PEOPLE.map(pp => `${pp.name} (${pp.meta})`).join(', '),
+      '- persone su cui vuole lavorare: ' + (p.people.filter(x => x.name).map(pp => `${pp.name}${pp.meta ? ` (${pp.meta})` : ''}`).join(', ') || 'nessuna indicata'),
       '- nota: le sue tre righe della sera sono private e non ti vengono mostrate; non fingere di conoscerle.',
     ].filter(Boolean).join('\n')
   }
@@ -243,6 +244,22 @@ export default function App() {
       })
   }
 
+  // Chiede a Ora un modo di iniziare, per una persona aggiunta da te.
+  const makeOpener = person => {
+    if (!person.name.trim()) { flash('Dai prima un nome a questa persona.'); return }
+    if (!liveAI) { flash('Per questo serve la chiave API, nel tuo profilo.'); return }
+    setS({ openerLoading: person.id })
+    askOpener({ apiKey: p.settings.apiKey, person, userName: name })
+      .then(text => {
+        setS({ openerLoading: null })
+        if (text) {
+          setP(prev => ({ people: prev.people.map(x => (x.id === person.id ? { ...x, opener: text } : x)) }))
+          flash('Ora ti ha scritto un modo di iniziare.')
+        } else flash('Non è arrivato niente. Riprova tra poco.')
+      })
+      .catch(err => { setS({ openerLoading: null }); flash(`Non è arrivato (${err.message}).`) })
+  }
+
   const localWeekSummary = () => {
     const wc = p.checkins.filter(c => c.ts >= weekAgo)
     const intense = wc.filter(c => c.intensity >= 4 && HARD.includes(c.core)).length
@@ -253,7 +270,7 @@ export default function App() {
   const app = {
     p, s, setS, setP, day, patchDay, markDone, gentle, name, pattern,
     flash, orderedFlow, logged, todayCheckins, weekStrip, triggers, spikes,
-    weekResponses, logPauseChoice, generateReport, localWeekSummary,
+    weekResponses, logPauseChoice, generateReport, localWeekSummary, makeOpener,
     startSession, stopSession, kindForCourse, logMood, sendText, liveAI,
     breath: t => breath(t, pattern),
     go: screen => setS({ screen }),

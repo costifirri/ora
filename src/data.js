@@ -88,12 +88,19 @@ export const MOVE_SLOTS = [
   { label: 'Domani mattina', when: 'Domani mattina', pos: 7 },
 ]
 
-export const PEOPLE = [
-  { name: 'Compagno', meta: 'ogni giorno · il legame più facile da dare per scontato', initial: 'C', opener: 'Con chi ti vive accanto le conversazioni diventano organizzazione: turni, spesa, cosa si mangia. Prova a chiedergli una cosa che non c’entra niente con la casa: “C’è qualcosa che ti pesa in questo periodo e che non mi hai detto?” Poi lascia il silenzio, anche se è lungo.' },
-  { name: 'Giulia', meta: 'sorella · ultimo scambio 9 giorni fa', initial: 'G', opener: 'Le hai risposto a monosillabi lunedì. Prova con una cosa vera: “In queste settimane sono stata poco presente. Come stai davvero?”' },
-  { name: 'Marco', meta: 'collega · solo conversazioni di lavoro', initial: 'M', opener: 'Con lui parli solo di scadenze. Una domanda che apre: “Cosa ti sta piacendo in questo periodo, fuori da qui?”' },
-  { name: 'Elena', meta: 'amica · vi vedete giovedì', initial: 'E', opener: 'Giovedì prova a dire una cosa che non hai ancora detto a nessuno di questo mese. Poi taci e ascolta.' },
+// Persone di partenza: da qui in poi vivono nei dati salvati (p.people)
+// e si possono rinominare, aggiungere e togliere.
+export const DEFAULT_PEOPLE = [
+  { id: 'p-compagno', name: 'Compagno', meta: 'ogni giorno · il legame più facile da dare per scontato', opener: 'Con chi ti vive accanto le conversazioni diventano organizzazione: turni, spesa, cosa si mangia. Prova a chiedergli una cosa che non c’entra niente con la casa: “C’è qualcosa che ti pesa in questo periodo e che non mi hai detto?” Poi lascia il silenzio, anche se è lungo.' },
+  { id: 'p-giulia', name: 'Giulia', meta: 'sorella', opener: 'Quando le rispondi a monosillabi, prova con una cosa vera: “In queste settimane sono stata poco presente. Come stai davvero?”' },
+  { id: 'p-marco', name: 'Marco', meta: 'collega', opener: 'Con lui parli solo di scadenze. Una domanda che apre: “Cosa ti sta piacendo in questo periodo, fuori da qui?”' },
+  { id: 'p-elena', name: 'Elena', meta: 'amica', opener: 'La prossima volta prova a dire una cosa che non hai ancora detto a nessuno di questo mese. Poi taci e ascolta.' },
 ]
+
+// Usato per chi aggiungi tu, finché non chiedi a Ora un modo di iniziare.
+export const GENERIC_OPENER = 'Una frase vera su di te, poi una domanda, poi silenzio. Il silenzio è la parte difficile, non le parole.'
+
+export const initialOf = name => (name || '?').trim().charAt(0).toUpperCase() || '?'
 
 export const QUESTIONS = [
   'Di cosa ti sei accorta di te stessa quest’anno?',

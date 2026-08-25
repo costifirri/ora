@@ -68,6 +68,37 @@ export async function askOra({ apiKey, system, history }) {
   return txt.length < 25 ? '' : txt
 }
 
+// Un modo di iniziare, per una persona che hai aggiunto tu.
+export async function askOpener({ apiKey, person, userName }) {
+  const system = [
+    `Sei Ora, la compagna dell’app di benessere di ${userName}. Scrivi in italiano, dandole del tu.`,
+    'Ti chiede un modo concreto per aprire una conversazione più vera con una persona che le sta a cuore.',
+    'Rispondi con due o tre frasi, in un unico paragrafo: prima una nota su come vanno di solito le conversazioni in quel tipo di legame, poi una domanda precisa da fare, riportata fra virgolette, poi l’invito a lasciare il silenzio.',
+    'Niente elenchi, niente emoji, niente titoli, niente retorica. Non inventare fatti su questa persona: sai solo quello che ti dice qui.',
+  ].join('\n')
+  const who = `Persona: ${person.name}. Relazione: ${person.meta || 'non specificata'}.`
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model: MODEL,
+      max_tokens: 1024,
+      output_config: { effort: 'low' },
+      system,
+      messages: [{ role: 'user', content: who }],
+    }),
+  })
+  if (!res.ok) throw new Error(`errore ${res.status}`)
+  const out = await res.json()
+  if (out.stop_reason === 'refusal') return ''
+  return (out.content || []).filter(b => b.type === 'text').map(b => b.text).join('').trim()
+}
+
 // Report settimanale: due paragrafi caldi sui dati veri. Le note della sera
 // non vengono mai incluse — l'app promette che nessuno le legge.
 export async function weeklyReport({ apiKey, contextBlock, name }) {

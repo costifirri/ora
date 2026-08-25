@@ -62,10 +62,21 @@ export default function Profilo({ app }) {
 
         <div className="card sand">
           <div className="h-card" style={{ marginBottom: 10 }}>La voce di Ora</div>
-          <div style={{ fontSize: 13, color: 'rgba(32,30,29,.6)', lineHeight: 1.5, marginBottom: 10 }}>
-            Con una chiave API Anthropic, Ora risponde davvero a quello che scrivi e ti legge la settimana.
-            Senza, usa frasi preparate. La chiave resta su questo dispositivo.
+          <div style={{ fontSize: 13, color: 'rgba(32,30,29,.6)', lineHeight: 1.5, marginBottom: 14 }}>
+            Con una chiave tua, Ora risponde davvero a quello che scrivi, ti legge la settimana e ti
+            suggerisce come aprire una conversazione. Senza, usa frasi preparate: l’app funziona lo stesso.
           </div>
+
+          <ol className="howto">
+            <li>
+              Apri <a href="https://platform.claude.com/settings/keys" target="_blank" rel="noopener noreferrer">platform.claude.com</a> e accedi
+              (o registrati: è un account per sviluppatori, diverso dall’abbonamento a Claude).
+            </li>
+            <li>In <strong>Billing</strong> carica un piccolo credito: si paga a consumo, il minimo è circa 5 $ e dura a lungo.</li>
+            <li>In <strong>API Keys</strong> tocca <strong>Create Key</strong>, dalle un nome e copiala subito: viene mostrata una volta sola.</li>
+            <li>Incollala qui sotto. Resta su questo dispositivo e non viene mandata a nessun altro.</li>
+          </ol>
+
           <input
             className="apikey-input"
             type="password"
@@ -91,7 +102,7 @@ export default function Profilo({ app }) {
           </button>
         </div>
 
-        <div className="fineprint">Ora · v3.1</div>
+        <div className="fineprint">Ora · v3.2</div>
       </div>
     </div>
   )
