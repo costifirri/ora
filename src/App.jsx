@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { FLOW, COURSE, CUES, HARD, CORE, HELPERS, SEED_TRIGGERS, SEED_WEEK, TRIGGER_TAGS, breath, answerFor } from './data.js'
-import { buildSystem, askOra, weeklyReport, askOpener } from './ai.js'
-import { loadPersisted, savePersisted, adoptCloud, todayKey, emptyDay, exportAll } from './storage.js'
+import { buildSystem, askOra, weeklyReport, askOpener, extractMemories, monthChapter } from './ai.js'
+import { loadPersisted, savePersisted, adoptCloud, todayKey, emptyDay, exportAll, freshStart } from './storage.js'
 import { isConfigured } from './firebase.js'
 import { watchAuth, loadCloud, saveCloud, signOutNow } from './cloud.js'
 import Auth from './screens/Auth.jsx'
@@ -14,6 +14,7 @@ import Session from './screens/Session.jsx'
 import Sera from './screens/Sera.jsx'
 import Coach from './screens/Coach.jsx'
 import Profilo from './screens/Profilo.jsx'
+import Memoria from './screens/Memoria.jsx'
 
 const TABS = [
   { id: 'oggi', label: 'Ora' },
@@ -29,7 +30,7 @@ const EPHEMERAL = {
   seraStep: 0, seraT: 0, seraDraft: '',
   openPerson: null, editPerson: null, openerLoading: null,
   convoWho: null, convoTone: null, convoUnsaid: '',
-  draft: '', typing: false, toast: null, aiError: null, reportLoading: false,
+  draft: '', typing: false, toast: null, aiError: null, reportLoading: false, chapterLoading: false,
 }
 
 export default function App() {
@@ -223,23 +224,52 @@ export default function App() {
   }
 
   // --- Chat ---
+  // Quello che Ora sa di te, dal piu' stabile al piu' passeggero.
   const contextBlock = () => {
     const fatti = FLOW.filter(x => day.done[x.k]).map(x => x.title)
     const weekCheckins = p.checkins.filter(c => c.ts >= weekAgo)
+    const pr = p.profile
+    const day2 = ts => new Date(ts).toLocaleDateString('it-IT', { day: 'numeric', month: 'long' })
+
+    const chiSei = [
+      pr.lavoro && `- di lavoro: ${pr.lavoro}`,
+      pr.ritmi && `- i suoi ritmi: ${pr.ritmi}`,
+      pr.pesa && `- cosa le pesa di solito: ${pr.pesa}`,
+      pr.bene && `- cosa le fa bene: ${pr.bene}`,
+      pr.voce && `- come vuole che le parli: ${pr.voce}`,
+      '- persone che le stanno a cuore: ' + (p.people.filter(x => x.name).map(pp => `${pp.name}${pp.meta ? ` (${pp.meta})` : ''}`).join(', ') || 'nessuna indicata'),
+    ].filter(Boolean)
+
+    const capitoli = p.chapters.slice(-3).map(c => `${c.month}: ${c.text}`)
+    const ricordi = p.memories.slice(-25).map(m => `- ${m.text}`)
+    const righe = p.seraNotes.slice(-3).map(n => `- ${day2(n.ts)}: ${n.text}`)
+
     return [
-      `Dati di ${name}, oggi:`,
+      `Chi e' ${name}:`,
+      ...chiSei,
+      '',
+      capitoli.length ? 'Quello che hai capito di lei nei mesi passati:' : null,
+      ...(capitoli.length ? capitoli : []),
+      capitoli.length ? '' : null,
+      ricordi.length ? 'Cose che ti ha detto e che ricordi:' : null,
+      ...(ricordi.length ? ricordi : []),
+      ricordi.length ? '' : null,
+      righe.length ? 'Le sue ultime righe della sera (scritte per se stessa: trattale con delicatezza):' : null,
+      ...(righe.length ? righe : []),
+      righe.length ? '' : null,
+      'Oggi:',
       '- ultimo check-in: ' + (logged ? logged.word + (logged.intensity >= 4 ? ' (intensa)' : '') + (logged.tag ? `, innesco: ${logged.tag}` : '') : 'non ancora fatto oggi'),
-      '- passi del flusso completati: ' + (fatti.length ? fatti.join('; ') : 'nessuno'),
+      '- passi della giornata gia' + "'" + ' fatti: ' + (fatti.length ? fatti.join('; ') : 'nessuno'),
       `- passo del percorso di meditazione: ${p.courseStep + 1} di 7 (${COURSE[p.courseStep].label})`,
-      `- acqua: ${day.water} bicchieri su 8; ha camminato: ${day.done.move ? 'sì' : 'non ancora'}; minuti di movimento registrati oggi: ${day.moveMin}` + (day.sleep != null ? `; ore di sonno stanotte: ${day.sleep}` : ''),
-      '- inneschi noti: ' + triggers.list.map(t => `${t.label} (${t.n}/${t.of})`).join(', '),
-      `- check-in negli ultimi 7 giorni: ${weekCheckins.length}, di cui intensi: ${weekCheckins.filter(c => c.intensity >= 4 && HARD.includes(c.core)).length}`,
-      `- volte in cui negli ultimi 7 giorni ha scelto una risposta invece di reagire (Momento difficile): ${weekResponses.length}` + (weekResponses.length ? ` (${weekResponses.map(x => x.choice).join('; ')})` : ''),
-      p.intention ? `- la sua intenzione della settimana: ${p.intention}` : null,
-      '- cosa la calma: ' + HELPERS.map(h => h.label).join(', '),
-      '- persone su cui vuole lavorare: ' + (p.people.filter(x => x.name).map(pp => `${pp.name}${pp.meta ? ` (${pp.meta})` : ''}`).join(', ') || 'nessuna indicata'),
-      '- nota: le sue tre righe della sera sono private e non ti vengono mostrate; non fingere di conoscerle.',
-    ].filter(Boolean).join('\n')
+      `- acqua: ${day.water} bicchieri su 8; movimento: ${day.moveMin} minuti` + (day.sleep != null ? `; ha dormito ${day.sleep} ore` : ''),
+      '',
+      'Ultimi sette giorni:',
+      `- check-in: ${weekCheckins.length}, di cui intensi: ${weekCheckins.filter(c => c.intensity >= 4 && HARD.includes(c.core)).length}`,
+      `- volte in cui ha scelto una risposta invece di reagire: ${weekResponses.length}` + (weekResponses.length ? ` (${weekResponses.map(x => x.choice).join('; ')})` : ''),
+      '- inneschi ricorrenti: ' + triggers.list.map(t => `${t.label} (${t.n}/${t.of})`).join(', '),
+      p.intention ? `- la regola che si e' data: ${p.intention}` : null,
+      '- cosa la calma, per esperienza: ' + HELPERS.map(h => h.label).join(', '),
+    ].filter(x => x !== null).join('\n')
   }
 
   const liveAI = !!p.settings.apiKey
@@ -304,6 +334,83 @@ export default function App() {
       .catch(err => { setS({ openerLoading: null }); flash(`Non è arrivato (${err.message}).`) })
   }
 
+  // --- Memoria -------------------------------------------------------------
+
+  // Alla fine di una chiacchierata tiene quello che vale la pena ricordare.
+  const harvestMemories = () => {
+    if (!liveAI) return
+    const fresh = p.messages.slice(p.memoryUpTo)
+    const mine = fresh.filter(m => m.from === 'me')
+    if (mine.length === 0) return
+    const exchange = fresh.map(m => `${m.from === 'me' ? name : 'Ora'}: ${m.text}`).join('\n')
+    const upTo = p.messages.length
+    extractMemories({ apiKey: p.settings.apiKey, settings: p.settings, exchange, known: p.memories, userName: name })
+      .then(found => {
+        setP(prev => ({
+          memoryUpTo: upTo,
+          memories: [
+            ...prev.memories,
+            ...found
+              .filter(t => !prev.memories.some(m => m.text.toLowerCase() === t.toLowerCase()))
+              .map((text, i) => ({ id: `m-${Date.now()}-${i}`, text, ts: Date.now(), source: 'chat' })),
+          ],
+        }))
+      })
+      .catch(() => { setP({ memoryUpTo: upTo }) })
+  }
+
+  // Il mese piu' recente che si e' chiuso e che Ora non ha ancora raccontato.
+  const pendingMonth = (() => {
+    if (!p.checkins.length && !p.seraNotes.length) return null
+    const stamps = [...p.checkins.map(c => c.ts), ...p.seraNotes.map(n => n.ts)]
+    const now = new Date()
+    const thisMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+    const months = [...new Set(stamps.map(ts => {
+      const d = new Date(ts)
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+    }))].filter(m => m !== thisMonth).sort()
+    const told = new Set(p.chapters.map(c => c.month))
+    return months.reverse().find(m => !told.has(m)) || null
+  })()
+
+  const monthName = m => {
+    const [y, mm] = m.split('-')
+    return new Date(Number(y), Number(mm) - 1, 1)
+      .toLocaleDateString('it-IT', { month: 'long', year: 'numeric' })
+  }
+
+  // Raccoglie il materiale grezzo di un mese e chiede a Ora di raccontarlo.
+  const writeChapter = month => {
+    if (!liveAI) { flash('Per il racconto del mese serve la chiave, nel tuo profilo.'); return }
+    const inMonth = ts => {
+      const d = new Date(ts)
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` === month
+    }
+    const day2 = ts => new Date(ts).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })
+    const cks = p.checkins.filter(c => inMonth(c.ts))
+    const notes = p.seraNotes.filter(n => inMonth(n.ts))
+    const convos = p.convoLog.filter(c => inMonth(c.ts))
+    const pauses = p.pauseLog.filter(x => inMonth(x.ts))
+    const days = Object.entries(p.days).filter(([k]) => k.startsWith(month))
+    const material = [
+      `Check-in (${cks.length}): ` + (cks.map(c => `${day2(c.ts)} ${c.word}${c.intensity >= 4 ? ' (forte)' : ''}${c.tag ? ` [${c.tag}]` : ''}`).join(', ') || 'nessuno'),
+      `Momenti difficili risolti con una risposta (${pauses.length}): ` + (pauses.map(x => `${day2(x.ts)} ${x.choice}`).join('; ') || 'nessuno'),
+      `Conversazioni (${convos.length}): ` + (convos.map(c => `${c.who} ${c.tone}${c.unsaid ? ` — non detto: ${c.unsaid}` : ''}`).join('; ') || 'nessuna'),
+      `Giorni con movimento: ${days.filter(([, d]) => d.moveMin >= 10 || d.done?.move).length} su ${days.length} registrati`,
+      'Righe della sera:',
+      ...(notes.length ? notes.map(n => `- ${day2(n.ts)}: ${n.text}`) : ['- nessuna']),
+    ].join('\n')
+    setS({ chapterLoading: true })
+    monthChapter({ apiKey: p.settings.apiKey, settings: p.settings, monthLabel: monthName(month), material, userName: name })
+      .then(text => {
+        setS({ chapterLoading: false })
+        if (!text) { flash('Il racconto non e’ arrivato. Riprova tra poco.'); return }
+        setP(prev => ({ chapters: [...prev.chapters.filter(c => c.month !== month), { month, text, ts: Date.now() }] }))
+        flash(`Ora ha raccontato ${monthName(month)}.`)
+      })
+      .catch(err => { setS({ chapterLoading: false }); flash(`Non e’ arrivato (${err.message}).`) })
+  }
+
   const localWeekSummary = () => {
     const wc = p.checkins.filter(c => c.ts >= weekAgo)
     const intense = wc.filter(c => c.intensity >= 4 && HARD.includes(c.core)).length
@@ -315,6 +422,8 @@ export default function App() {
     p, s, setS, setP, day, patchDay, markDone, gentle, name, pattern,
     flash, orderedFlow, logged, todayCheckins, weekStrip, triggers, spikes,
     weekResponses, logPauseChoice, generateReport, localWeekSummary, makeOpener,
+    harvestMemories, pendingMonth, monthName, writeChapter,
+    resetAll: () => { setPRaw(freshStart(p.settings)); setS({ screen: 'oggi' }); flash('Ricominciamo da qui.') },
     startSession, stopSession, kindForCourse, logMood, sendText, liveAI,
     breath: t => breath(t, pattern),
     go: screen => setS({ screen }),
@@ -340,6 +449,7 @@ export default function App() {
       {s.screen === 'sera' && <Sera app={app} />}
       {s.screen === 'coach' && <Coach app={app} />}
       {s.screen === 'profile' && <Profilo app={app} />}
+      {s.screen === 'memoria' && <Memoria app={app} />}
 
       {s.toast && <div className="toast" role="status">{s.toast}</div>}
 

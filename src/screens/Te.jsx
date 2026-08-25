@@ -1,3 +1,4 @@
+import { ArrowRight } from 'lucide-react'
 import CorpoSection from '../sections/CorpoSection.jsx'
 import SchemiSection from '../sections/SchemiSection.jsx'
 import LegamiSection from '../sections/LegamiSection.jsx'
@@ -18,7 +19,7 @@ const INTENTION_EXAMPLES = [
 const fmtDate = ts => new Date(ts).toLocaleDateString('it-IT', { day: 'numeric', month: 'long' })
 
 export default function Te({ app }) {
-  const { p, s, setS, setP, generateReport, localWeekSummary, liveAI } = app
+  const { p, s, setS, setP, generateReport, localWeekSummary, liveAI, pendingMonth, monthName, writeChapter } = app
   const lens = s.teTab || 'come'
 
   return (
@@ -29,6 +30,35 @@ export default function Te({ app }) {
       </div>
 
       <div className="stack">
+        <button className="talk-row" onClick={() => setS({ screen: 'memoria' })}>
+          <span className="coach-avatar" style={{ width: 38, height: 38, fontSize: 15 }}>O</span>
+          <span style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
+            <span style={{ display: 'block', fontSize: 15, fontWeight: 600 }}>Cosa so di te</span>
+            <span style={{ display: 'block', fontSize: 12, color: 'var(--muted)' }}>
+              {p.profile.lavoro || p.memories.length
+                ? `${p.memories.length ? p.memories.length + ' cose che mi hai detto' : 'La tua scheda'}${p.chapters.length ? ` · ${p.chapters.length} mes${p.chapters.length === 1 ? 'e' : 'i'} raccontat${p.chapters.length === 1 ? 'o' : 'i'}` : ''}`
+                : 'Raccontami chi sei, così ti parlo davvero'}
+            </span>
+          </span>
+          <ArrowRight size={18} strokeWidth={2.75} color="var(--sage-500)" />
+        </button>
+
+        {pendingMonth && (
+          <div className="card sage">
+            <div className="kicker" style={{ color: 'rgba(86,99,63,.75)' }}>Un mese è finito</div>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 20, lineHeight: 1.2, margin: '8px 0 6px', color: 'var(--forest)' }}>
+              Vuoi che ti racconti {monthName(pendingMonth)}?
+            </div>
+            <div style={{ fontSize: 13.5, color: 'rgba(61,71,43,.8)', lineHeight: 1.5, marginBottom: 12 }}>
+              Rileggo quello che è successo e ne tengo poche righe. Fra sei mesi saranno l’unica cosa
+              che ti resta di questo periodo.
+            </div>
+            <button className="btn-primary" style={{ minHeight: 48 }} onClick={() => writeChapter(pendingMonth)} disabled={s.chapterLoading}>
+              {s.chapterLoading ? 'Sto rileggendo…' : 'Raccontamelo'}
+            </button>
+          </div>
+        )}
+
         <div className="card sand">
           <div className="h-card" style={{ marginBottom: 10 }}>Questa settimana</div>
           <div style={{ fontSize: 14, color: 'rgba(32,30,29,.7)', lineHeight: 1.55 }}>{localWeekSummary()}</div>

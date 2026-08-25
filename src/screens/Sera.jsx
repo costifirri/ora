@@ -5,7 +5,7 @@ const KICKERS = ['Passo uno · respiro', 'Passo due · tre righe', 'Passo tre ·
 const TITLES = ['Due minuti di respiro.', 'Tre righe, non di più.', 'Una domanda per domani.']
 const BODIES = [
   'Chiudi la giornata dal corpo, non dalla testa. Segui il cerchio: se la mente scappa, va bene, torna.',
-  'Non un diario: solo quello che ti ha mossa oggi. Serve a te di domani, non a nessun altro.',
+  'Non un diario: solo quello che ti ha mossa oggi. Serve a te di domani — e a Ora, per capirti.',
   'Portala con te fino a domani senza rispondere adesso. Le risposte migliori arrivano dopo il sonno.',
 ]
 const CTAS = ['Ho respirato', 'Ho scritto', 'La porto a domani']
@@ -74,7 +74,7 @@ export default function Sera({ app }) {
             }}
           />
           <div style={{ fontSize: 12, color: 'rgba(249,244,237,.45)' }}>
-            {words > 0 ? `${words} parole · nessuno le leggerà` : 'Anche una riga sola conta.'}
+            {words > 0 ? `${words} parole · le legge solo Ora, per capirti meglio` : 'Anche una riga sola conta.'}
           </div>
         </div>
       )}

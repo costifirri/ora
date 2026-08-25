@@ -99,7 +99,7 @@ export default function SchemiSection({ app }) {
         <div className="card surface">
           <div className="h-card" style={{ marginBottom: 4 }}>Le tue tre righe</div>
           <div style={{ fontSize: 13, color: 'rgba(32,30,29,.6)', lineHeight: 1.5, marginBottom: 10 }}>
-            Quello che ti ha mossa, riletto a distanza. Restano solo qui, su questo dispositivo.
+            Quello che ti ha mossa, riletto a distanza. Le ultime le legge anche Ora, per conoscerti meglio.
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {recentNotes.map((n, i) => (

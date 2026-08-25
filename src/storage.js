@@ -1,5 +1,6 @@
-// Persistenza locale: check-in, note della sera, conversazioni, persone, flusso
-// per giorno, percorso, chat e impostazioni. Tutto resta sul dispositivo.
+// Persistenza locale: chi sei, la tua storia, quello che Ora ha capito di te,
+// piu' il giorno corrente. Tutto resta sul dispositivo (o nel tuo spazio, se
+// hai un account).
 
 import { DEFAULT_PEOPLE } from './data.js'
 import { DEFAULT_MODEL } from './ai.js'
@@ -25,10 +26,17 @@ export const EMPTY_DONE = { checkin: false, meditate: false, move: false, connec
 
 export const DEFAULT_PERSISTED = {
   checkins: [],        // {word, core, intensity, tag?, ts}
-  seraNotes: [],       // {text, ts} — restano solo sul dispositivo, mai inviate all'AI
+  seraNotes: [],       // {text, ts}
   convoLog: [],        // {who, tone, unsaid, ts}
   pauseLog: [],        // {choice, ts} — risposte scelte nel Momento difficile
   people: structuredClone(DEFAULT_PEOPLE), // {id, name, meta, opener} — modificabili
+
+  // --- Memoria: chi sei, cosa mi hai detto, cosa ho capito ---
+  profile: { lavoro: '', ritmi: '', pesa: '', bene: '', voce: '' },
+  memories: [],        // {id, text, ts, source:'chat'|'tu'} — cose durature che le hai detto
+  chapters: [],        // {month:'2026-08', text, ts} — il racconto di un mese, scritto da Ora
+  memoryUpTo: 0,       // fin dove ho gia' estratto ricordi dalla chat (indice messaggi)
+
   intention: '',       // intenzione settimanale "se X, allora Y"
   weeklyReport: null,  // {text, ts} — ultimo report generato
   days: {},            // 'YYYY-MM-DD' -> {done, water, moveWhen, movePos, moveMoved, listened, moveMin, sleep, meals}
@@ -60,6 +68,7 @@ export function loadPersisted() {
       days,
       // Una lista vuota è una scelta legittima; solo l'assenza va seminata.
       people: Array.isArray(data.people) ? data.people : structuredClone(DEFAULT_PEOPLE),
+      profile: { ...DEFAULT_PERSISTED.profile, ...(data.profile || {}) },
       // La chiave arriva dal cassetto locale. Se è ancora vuoto perché questo
       // dispositivo viene da una versione precedente, la recupero dal vecchio
       // blob: il primo salvataggio la sposta nel cassetto e la toglie da lì.
@@ -97,6 +106,7 @@ export function adoptCloud(cloud) {
     ...cloud,
     days,
     people: Array.isArray(cloud.people) ? cloud.people : structuredClone(DEFAULT_PEOPLE),
+    profile: { ...DEFAULT_PERSISTED.profile, ...(cloud.profile || {}) },
     settings: { ...DEFAULT_PERSISTED.settings, ...(cloud.settings || {}), apiKey: readApiKey() },
   }
 }
@@ -106,6 +116,12 @@ export function emptyDay() {
     done: { ...EMPTY_DONE }, water: 0, moveWhen: 'Pomeriggio', movePos: 2, moveMoved: false, listened: false,
     moveMin: 0, sleep: null, meals: { colazione: false, pranzo: false, cena: false },
   }
+}
+
+// Ricomincia da zero: sparisce tutto quello che hai registrato, restano
+// la chiave, il modello scelto e il tuo nome.
+export function freshStart(settings) {
+  return { ...structuredClone(DEFAULT_PERSISTED), settings: { ...settings } }
 }
 
 export function exportAll(p) {

@@ -9,7 +9,7 @@ const PROMPTS = [
 ]
 
 export default function Coach({ app }) {
-  const { p, s, setS, sendText, liveAI } = app
+  const { p, s, setS, sendText, liveAI, harvestMemories } = app
   const scrollRef = useRef(null)
 
   useEffect(() => {
@@ -20,7 +20,7 @@ export default function Coach({ app }) {
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
       <div className="coach-head">
-        <button className="btn-back" onClick={() => setS({ screen: 'oggi' })} aria-label="Indietro">
+        <button className="btn-back" onClick={() => { harvestMemories(); setS({ screen: 'oggi' }) }} aria-label="Indietro">
           <ArrowLeft size={18} strokeWidth={2.75} />
         </button>
         <span className="coach-avatar">O</span>

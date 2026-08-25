@@ -13,9 +13,10 @@ const INTENTS = [
 ]
 
 export default function Profilo({ app }) {
-  const { p, setS, setP, name, exportData, user, hasAccounts, leave, flash } = app
+  const { p, setS, setP, name, exportData, user, hasAccounts, leave, flash, resetAll } = app
   const gentle = p.settings.gentle
   const [killing, setKilling] = useState(false)
+  const [wiping, setWiping] = useState(false)
   const [pw, setPw] = useState('')
 
   return (
@@ -134,6 +135,33 @@ export default function Profilo({ app }) {
             Esporta i dati
           </button>
 
+          {!wiping ? (
+            <button
+              className="step-link" style={{ color: 'rgba(32,30,29,.45)', marginTop: 10 }}
+              onClick={() => setWiping(true)}
+            >
+              Ricomincia da zero
+            </button>
+          ) : (
+            <div style={{ marginTop: 14, background: 'var(--sand)', borderRadius: 24, padding: '16px 18px' }}>
+              <div style={{ fontSize: 13, lineHeight: 1.55, color: 'rgba(32,30,29,.7)', marginBottom: 12 }}>
+                Cancella check-in, righe della sera, conversazioni, ricordi e racconti dei mesi.
+                Restano la chiave, il modello e il tuo nome. Se vuoi tenerne una copia, esporta prima.
+              </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button className="btn-outline" style={{ flex: 1, minHeight: 46 }} onClick={() => setWiping(false)}>
+                  Lascia stare
+                </button>
+                <button
+                  className="btn-primary" style={{ flex: 1, width: 'auto', minHeight: 46, fontSize: 15 }}
+                  onClick={() => { setWiping(false); resetAll() }}
+                >
+                  Ricomincia
+                </button>
+              </div>
+            </div>
+          )}
+
           {user && (
             <>
               <button className="btn-outline" style={{ width: '100%', minHeight: 46, marginTop: 10 }} onClick={leave}>
@@ -188,7 +216,7 @@ export default function Profilo({ app }) {
           )}
         </div>
 
-        <div className="fineprint">Ora · v4.1</div>
+        <div className="fineprint">Ora · v5.0</div>
       </div>
     </div>
   )
