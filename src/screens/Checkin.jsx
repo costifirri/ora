@@ -1,5 +1,5 @@
 import { ArrowLeft } from 'lucide-react'
-import { CORE, TONES, HARD, INTENSITY_LABELS } from '../data.js'
+import { CORE, TONES, HARD, INTENSITY_LABELS, TRIGGER_TAGS } from '../data.js'
 
 export default function Checkin({ app }) {
   const { s, setS, logMood } = app
@@ -74,6 +74,31 @@ export default function Checkin({ app }) {
                 onChange={e => setS({ intensity: Number(e.target.value) })}
                 aria-label="Intensità"
               />
+            </div>
+            <div>
+              <div style={{ fontSize: 12, color: 'rgba(32,30,29,.6)', marginBottom: 8 }}>
+                Cosa è successo poco prima? <span style={{ opacity: .6 }}>(facoltativo)</span>
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {TRIGGER_TAGS.map(t => {
+                  const on = s.checkinTag === t.key
+                  return (
+                    <button
+                      key={t.key}
+                      className="chip"
+                      style={{
+                        minHeight: 36, padding: '6px 12px', fontSize: 12.5,
+                        background: on ? 'var(--sage-500)' : 'var(--neutral-tint)',
+                        color: on ? 'var(--surface)' : '#474238',
+                        borderColor: on ? 'var(--sage-500)' : 'rgba(32,30,29,.18)',
+                      }}
+                      onClick={() => setS(prev => ({ checkinTag: prev.checkinTag === t.key ? null : t.key }))}
+                    >
+                      {t.label}
+                    </button>
+                  )
+                })}
+              </div>
             </div>
             <div style={{ fontSize: 13, color: 'rgba(32,30,29,.6)', lineHeight: 1.5 }}>
               {HARD.includes(core.key) && s.intensity >= 4

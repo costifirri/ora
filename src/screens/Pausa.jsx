@@ -2,7 +2,7 @@ import { ArrowLeft } from 'lucide-react'
 import { PAUSA_STEPS, PAUSA_CHOICES } from '../data.js'
 
 export default function Pausa({ app }) {
-  const { s, setS, flash, breath } = app
+  const { s, setS, breath, logPauseChoice } = app
   const ps = PAUSA_STEPS[s.pausaStep]
   const pb = breath(s.pausaT)
 
@@ -54,10 +54,7 @@ export default function Pausa({ app }) {
               }}
               onMouseEnter={e => (e.currentTarget.style.background = 'var(--sage-050)')}
               onMouseLeave={e => (e.currentTarget.style.background = 'var(--surface)')}
-              onClick={() => {
-                setS({ screen: 'home' })
-                flash(`Hai scelto ${c.word}. Questa è una risposta, non una reazione: contala.`)
-              }}
+              onClick={() => logPauseChoice(c.label, c.word)}
             >
               <span style={{ display: 'block', fontSize: 15, fontWeight: 600 }}>{c.label}</span>
               <span style={{ display: 'block', fontSize: 12.5, color: 'var(--muted)', marginTop: 2 }}>{c.note}</span>

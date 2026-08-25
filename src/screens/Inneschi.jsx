@@ -3,8 +3,11 @@ import { HELPERS } from '../data.js'
 
 const LEVEL_COLORS = ['#e1eecc', '#ffe1d0', '#f6a06b', '#c67139']
 
+const fmtDay = ts => new Date(ts).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })
+
 export default function Inneschi({ app }) {
-  const { setS, weekStrip, triggers, spikes, todayCheckins, p } = app
+  const { setS, weekStrip, triggers, p, weekResponses } = app
+  const recentNotes = p.seraNotes.slice(-7).reverse()
 
   return (
     <div className="screen">
@@ -58,7 +61,13 @@ export default function Inneschi({ app }) {
           </div>
           {triggers.example && (
             <div style={{ fontSize: 12, color: 'rgba(32,30,29,.5)', marginTop: 14 }}>
-              Un esempio, per ora: con qualche check-in intenso in più, qui compaiono i tuoi orari veri.
+              Un esempio, per ora: con qualche check-in intenso in più, qui compaiono i tuoi inneschi veri.
+              Nel check-in, il tocco su "cosa è successo poco prima" li rende ancora più precisi.
+            </div>
+          )}
+          {triggers.fromTags && (
+            <div style={{ fontSize: 12, color: 'rgba(32,30,29,.5)', marginTop: 14 }}>
+              Calcolato dai tuoi tocchi su "cosa è successo poco prima". Più lo usi, più è fedele.
             </div>
           )}
         </div>
@@ -78,12 +87,31 @@ export default function Inneschi({ app }) {
           </div>
         </div>
 
+        {recentNotes.length > 0 && (
+          <div className="card surface">
+            <div className="h-card" style={{ marginBottom: 4 }}>Le tue tre righe</div>
+            <div style={{ fontSize: 13, color: 'rgba(32,30,29,.6)', lineHeight: 1.5, marginBottom: 10 }}>
+              Quello che ti ha mossa, riletto a distanza. Restano solo qui, su questo dispositivo.
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {recentNotes.map((n, i) => (
+                <div key={i} style={{ padding: '12px 0', borderTop: '1px solid rgba(32,30,29,.10)' }}>
+                  <div style={{ fontSize: 11, letterSpacing: '.06em', textTransform: 'uppercase', fontWeight: 600, color: 'rgba(32,30,29,.45)', marginBottom: 4 }}>
+                    {fmtDay(n.ts)}
+                  </div>
+                  <div style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(32,30,29,.75)', whiteSpace: 'pre-wrap' }}>{n.text}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="card surface">
           <div className="h-card" style={{ marginBottom: 10 }}>Quello che stai imparando</div>
           <div style={{ fontSize: 14, color: 'rgba(32,30,29,.65)', lineHeight: 1.55 }}>
-            Non sei una persona nervosa: sei una persona che arriva alla sera senza aver messo una pausa da nessuna parte.
-            Nei giorni con dieci minuti di pratica, i picchi non sono arrivati affatto — e le volte in cui hai usato il
-            Momento difficile, hai risposto invece di reagire.
+            {weekResponses.length > 0
+              ? `Questa settimana, ${weekResponses.length === 1 ? 'una volta' : weekResponses.length + ' volte'} sei arrivata al bordo della reazione e hai scelto una risposta${weekResponses.length === 1 ? '' : ', ogni volta'}: ${[...new Set(weekResponses.map(x => x.choice.toLowerCase()))].join(', ')}. Non è trattenersi: è scegliere. È esattamente il muscolo che stai allenando.`
+              : 'Non sei una persona nervosa: sei una persona che arriva alla sera senza aver messo una pausa da nessuna parte. Ogni volta che userai il Momento difficile, la risposta che scegli verrà contata qui.'}
           </div>
           <button
             className="btn-primary" style={{ marginTop: 16, minHeight: 48, fontSize: 15 }}

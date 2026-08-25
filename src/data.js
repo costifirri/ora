@@ -105,6 +105,16 @@ export const QUESTIONS = [
   'Che cosa hai cambiato idea su, di recente?',
 ]
 
+// Tag facoltativi del check-in: "cosa è successo poco prima?"
+export const TRIGGER_TAGS = [
+  { key: 'lavoro', label: 'Lavoro', note: 'Messaggi, scadenze o riunioni poco prima del picco.' },
+  { key: 'relazioni', label: 'Relazioni', note: 'Uno scambio con qualcuno che ti è rimasto addosso.' },
+  { key: 'fretta', label: 'Fretta', note: 'Ritardi e corse: la giornata parte contratta e resta così.' },
+  { key: 'stanchezza', label: 'Stanchezza', note: 'Poca energia o poco sonno prima del picco.' },
+  { key: 'telefono', label: 'Telefono', note: 'Il telefono in mano poco prima: notizie, social o messaggi.' },
+  { key: 'altro', label: 'Niente di preciso', note: 'È arrivato senza un innesco chiaro. Anche questo è un dato.' },
+]
+
 // Inneschi di esempio, mostrati finché i check-in non bastano a calcolarli davvero.
 export const SEED_TRIGGERS = [
   { label: 'Sera, dopo le 21', n: 5, of: 8, note: 'Cinque picchi su otto sono arrivati dopo cena, in giornate senza nessuna pausa.' },

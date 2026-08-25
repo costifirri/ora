@@ -37,14 +37,22 @@ portati verbatim dal prototipo (`src/ai.js`).
 
 ## Persistenza (localStorage, chiave `ora-state-v1`)
 
-- storico dei check-in (parola, sfumatura, intensità, timestamp)
+- storico dei check-in (parola, sfumatura, intensità, innesco, timestamp)
 - note del rituale della sera
 - registro delle conversazioni
-- completamento del flusso per giorno (più acqua, spostamento camminata, ascolto)
+- risposte scelte nel Momento difficile
+- intenzione della settimana e ultimo report generato
+- completamento del flusso per giorno (acqua, minuti di movimento, sonno, pasti, spostamento camminata, ascolto)
 - avanzamento del percorso di meditazione
 - chat e impostazioni
 
 **Esporta i dati** in *Tu* scarica tutto come JSON.
+
+### Privacy
+
+Le tre righe del rituale della sera **non vengono mai inviate all'AI**: né in chat né nel report.
+L'app promette "nessuno le leggerà" e il blocco di contesto lo dichiara esplicitamente al modello.
+Sono rileggibili solo in *Conoscerti*, sul dispositivo.
 
 ## Scelte rispetto al prototipo
 
@@ -55,8 +63,27 @@ portati verbatim dal prototipo (`src/ai.js`).
   e sposta l'indicatore al successivo (nel prototipo era statico).
 - **Icone Lucide** a stroke 2.75 (freccia indietro, invio, spunte, +/−) come da design system;
   la tab bar usa i punti da 10px come da spec di navigazione.
-- Corpo: barre movimento e pasti restano illustrativi (serve un'integrazione salute/orologio);
-  l'acqua è reale e per-giorno.
+- **Corpo è reale**: movimento (minuti), sonno (ore) e pasti si registrano in due tocchi, per giorno.
+  Niente integrazione salute/orologio (non accessibile da PWA), quindi niente dati stimati:
+  l'insight in fondo confronta i giorni con e senza movimento sui picchi registrati.
+- **Tu** ha una sola impostazione reale (modalità senza sensi di colpa): i toggle di sincronizzazione,
+  promemoria e condivisione sono stati rimossi perché non facevano nulla. I promemoria push
+  richiederebbero un server.
+
+## Estensioni oltre il handoff
+
+Aggiunte per sostenere l'uso quotidiano, nello spirito del design (nessun punteggio, nessuna serie):
+
+- **Innesco nel check-in** — una domanda facoltativa "cosa è successo poco prima?" con sei tag.
+  Da tre check-in intensi taggati in poi, *Conoscerti* calcola gli inneschi da questi invece che
+  dalle fasce orarie.
+- **Risposte contate** — la scelta finale del Momento difficile viene salvata: *Conoscerti* mostra
+  quante volte hai risposto invece di reagire.
+- **Rilettura delle note della sera** — le ultime sette, con la data, in *Conoscerti*.
+- **Regola della settimana** — un'intenzione "se X, allora Y" in *Tu*, con esempi da cui partire;
+  entra nel contesto dell'AI.
+- **Report settimanale AI** — due paragrafi scritti da Ora sui dati veri (senza le note della sera).
+  Senza chiave API, un riepilogo locale calcolato.
 
 ## Struttura
 

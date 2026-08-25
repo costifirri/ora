@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { FLOW, COURSE, CUES, HARD, CORE, HELPERS, PEOPLE, SEED_TRIGGERS, SEED_WEEK, breath, answerFor } from './data.js'
-import { buildSystem, askOra } from './ai.js'
+import { FLOW, COURSE, CUES, HARD, CORE, HELPERS, PEOPLE, SEED_TRIGGERS, SEED_WEEK, TRIGGER_TAGS, breath, answerFor } from './data.js'
+import { buildSystem, askOra, weeklyReport } from './ai.js'
 import { loadPersisted, savePersisted, todayKey, emptyDay, exportAll } from './storage.js'
 import Home from './screens/Home.jsx'
 import Checkin from './screens/Checkin.jsx'
@@ -21,12 +21,12 @@ const TABS = [
 
 const EPHEMERAL = {
   screen: 'home',
-  core: null, nuance: null, intensity: 3,
+  core: null, nuance: null, intensity: 3, checkinTag: null,
   running: false, t: 0, sessionKind: 'respiro', sessionMins: 8, cue: 0, flowKey: null, courseIdx: null,
   pausaStep: 0, pausaT: 0,
   seraStep: 0, seraT: 0, seraDraft: '',
   openPerson: null, convoWho: null, convoTone: null, convoUnsaid: '',
-  draft: '', typing: false, toast: null, aiError: null,
+  draft: '', typing: false, toast: null, aiError: null, reportLoading: false,
 }
 
 export default function App() {
@@ -113,6 +113,16 @@ export default function App() {
   const triggers = (() => {
     if (spikes.length < 3) return { list: SEED_TRIGGERS, example: !spikes.length ? 'empty' : 'few' }
     const win = spikes.slice(-8)
+    // Se i check-in intensi portano i tag "cosa è successo poco prima",
+    // gli inneschi si calcolano da quelli: sono i più fedeli.
+    const tagged = win.filter(c => c.tag)
+    if (tagged.length >= 3) {
+      const list = TRIGGER_TAGS
+        .map(t => ({ label: t.label, n: tagged.filter(c => c.tag === t.key).length, of: win.length, note: t.note }))
+        .filter(t => t.n > 0)
+        .sort((a, b) => b.n - a.n)
+      return { list, example: false, fromTags: true }
+    }
     const buckets = [
       { label: 'Sera, dopo le 21', test: h => h >= 21, note: n => `${n === 1 ? 'Un picco' : n + ' picchi'} su ${win.length} dopo cena. È il momento in cui la giornata presenta il conto.` },
       { label: 'Fine della giornata', test: h => h >= 17 && h < 21, note: n => `${n} su ${win.length} nel passaggio tra lavoro e casa: i tre respiri sono fatti per lì.` },
@@ -128,6 +138,10 @@ export default function App() {
       .sort((a, b) => b.n - a.n)
     return { list, example: false }
   })()
+
+  // Risposte scelte nel Momento difficile negli ultimi 7 giorni
+  const weekAgo = Date.now() - 7 * 24 * 3600 * 1000
+  const weekResponses = p.pauseLog.filter(x => x.ts >= weekAgo)
 
   // --- Sessioni ---
   const startSession = (kind, mins, flowKey = null, courseIdx = null) =>
@@ -156,9 +170,9 @@ export default function App() {
     const core = CORE[s.core]
     const word = s.nuance === 'Altro ancora' ? core.key : (s.nuance || core.key)
     const goPausa = HARD.includes(core.key) && s.intensity >= 4
-    setP(prev => ({ checkins: [...prev.checkins, { word, core: core.key, intensity: s.intensity, ts: Date.now() }] }))
+    setP(prev => ({ checkins: [...prev.checkins, { word, core: core.key, intensity: s.intensity, tag: s.checkinTag || undefined, ts: Date.now() }] }))
     markDone('checkin')
-    setS({ screen: goPausa ? 'pausa' : 'home', pausaStep: 0, pausaT: 0 })
+    setS({ screen: goPausa ? 'pausa' : 'home', pausaStep: 0, pausaT: 0, checkinTag: null })
     flash(goPausa
       ? `Registrato: ${word.toLowerCase()}. Prima di tutto il resto, novanta secondi.`
       : `Registrato: ${word.toLowerCase()}. Ora cercherà uno schema, non un problema.`)
@@ -167,16 +181,21 @@ export default function App() {
   // --- Chat ---
   const contextBlock = () => {
     const fatti = FLOW.filter(x => day.done[x.k]).map(x => x.title)
+    const weekCheckins = p.checkins.filter(c => c.ts >= weekAgo)
     return [
       `Dati di ${name}, oggi:`,
-      '- ultimo check-in: ' + (logged ? logged.word + (logged.intensity >= 4 ? ' (intensa)' : '') : 'non ancora fatto oggi'),
+      '- ultimo check-in: ' + (logged ? logged.word + (logged.intensity >= 4 ? ' (intensa)' : '') + (logged.tag ? `, innesco: ${logged.tag}` : '') : 'non ancora fatto oggi'),
       '- passi del flusso completati: ' + (fatti.length ? fatti.join('; ') : 'nessuno'),
       `- passo del percorso di meditazione: ${p.courseStep + 1} di 7 (${COURSE[p.courseStep].label})`,
-      `- acqua: ${day.water} bicchieri su 8; ha camminato: ${day.done.move ? 'sì' : 'non ancora'}`,
+      `- acqua: ${day.water} bicchieri su 8; ha camminato: ${day.done.move ? 'sì' : 'non ancora'}; minuti di movimento registrati oggi: ${day.moveMin}` + (day.sleep != null ? `; ore di sonno stanotte: ${day.sleep}` : ''),
       '- inneschi noti: ' + triggers.list.map(t => `${t.label} (${t.n}/${t.of})`).join(', '),
+      `- check-in negli ultimi 7 giorni: ${weekCheckins.length}, di cui intensi: ${weekCheckins.filter(c => c.intensity >= 4 && HARD.includes(c.core)).length}`,
+      `- volte in cui negli ultimi 7 giorni ha scelto una risposta invece di reagire (Momento difficile): ${weekResponses.length}` + (weekResponses.length ? ` (${weekResponses.map(x => x.choice).join('; ')})` : ''),
+      p.intention ? `- la sua intenzione della settimana: ${p.intention}` : null,
       '- cosa la calma: ' + HELPERS.map(h => h.label).join(', '),
       '- persone su cui vuole lavorare: ' + PEOPLE.map(pp => `${pp.name} (${pp.meta})`).join(', '),
-    ].join('\n')
+      '- nota: le sue tre righe della sera sono private e non ti vengono mostrate; non fingere di conoscerle.',
+    ].filter(Boolean).join('\n')
   }
 
   const liveAI = !!p.settings.apiKey
@@ -200,9 +219,42 @@ export default function App() {
       .catch(err => finish(fallback, err.message === 'Failed to fetch' ? 'connessione assente' : err.message))
   }
 
+  // Registra la risposta scelta nel Momento difficile: è il dato che conta.
+  const logPauseChoice = (label, word) => {
+    setP(prev => ({ pauseLog: [...prev.pauseLog, { choice: label, ts: Date.now() }] }))
+    setS({ screen: 'home' })
+    flash(`Hai scelto ${word}. Questa è una risposta, non una reazione: contala.`)
+  }
+
+  const generateReport = () => {
+    if (!liveAI) {
+      flash('Per il report scritto da Ora serve la chiave API in Tu. Intanto: ' + localWeekSummary())
+      return
+    }
+    setS({ reportLoading: true })
+    weeklyReport({ apiKey: p.settings.apiKey, contextBlock: contextBlock(), name })
+      .then(text => {
+        setS({ reportLoading: false })
+        if (text) setP({ weeklyReport: { text, ts: Date.now() } })
+        else flash('Il report non è arrivato. Riprova tra poco.')
+      })
+      .catch(err => {
+        setS({ reportLoading: false })
+        flash(`Il report non è arrivato (${err.message}).`)
+      })
+  }
+
+  const localWeekSummary = () => {
+    const wc = p.checkins.filter(c => c.ts >= weekAgo)
+    const intense = wc.filter(c => c.intensity >= 4 && HARD.includes(c.core)).length
+    const n = (x, one, many) => `${x} ${x === 1 ? one : many}`
+    return `${n(wc.length, 'check-in', 'check-in')} questa settimana, ${n(intense, 'picco forte', 'picchi forti')}, ${n(weekResponses.length, 'risposta scelta', 'risposte scelte')} invece di reagire.`
+  }
+
   const app = {
     p, s, setS, setP, day, patchDay, markDone, gentle, name, pattern,
     flash, orderedFlow, logged, todayCheckins, weekStrip, triggers, spikes,
+    weekResponses, logPauseChoice, generateReport, localWeekSummary,
     startSession, stopSession, kindForCourse, logMood, sendText, liveAI,
     breath: t => breath(t, pattern),
     go: screen => setS({ screen }),

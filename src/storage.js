@@ -11,10 +11,13 @@ export function todayKey(d = new Date()) {
 export const EMPTY_DONE = { checkin: false, meditate: false, move: false, connect: false, scarico: false, sera: false, letto: false }
 
 export const DEFAULT_PERSISTED = {
-  checkins: [],        // {word, core, intensity, ts}
-  seraNotes: [],       // {text, ts}
+  checkins: [],        // {word, core, intensity, tag?, ts}
+  seraNotes: [],       // {text, ts} — restano solo sul dispositivo, mai inviate all'AI
   convoLog: [],        // {who, tone, unsaid, ts}
-  days: {},            // 'YYYY-MM-DD' -> {done, water, moveWhen, movePos, moveMoved, listened}
+  pauseLog: [],        // {choice, ts} — risposte scelte nel Momento difficile
+  intention: '',       // intenzione settimanale "se X, allora Y"
+  weeklyReport: null,  // {text, ts} — ultimo report generato
+  days: {},            // 'YYYY-MM-DD' -> {done, water, moveWhen, movePos, moveMoved, listened, moveMin, sleep, meals}
   courseStep: 0,
   courseDone: [false, false, false, false, false, false, false],
   qIdx: 0,
@@ -28,9 +31,19 @@ export function loadPersisted() {
     const raw = localStorage.getItem(KEY)
     if (!raw) return structuredClone(DEFAULT_PERSISTED)
     const data = JSON.parse(raw)
+    // I giorni salvati da versioni precedenti potrebbero non avere i campi nuovi
+    const days = Object.fromEntries(
+      Object.entries(data.days || {}).map(([k, v]) => [k, {
+        ...emptyDay(),
+        ...v,
+        done: { ...EMPTY_DONE, ...(v.done || {}) },
+        meals: { colazione: false, pranzo: false, cena: false, ...(v.meals || {}) },
+      }]),
+    )
     return {
       ...structuredClone(DEFAULT_PERSISTED),
       ...data,
+      days,
       settings: { ...DEFAULT_PERSISTED.settings, ...(data.settings || {}) },
     }
   } catch {
@@ -43,7 +56,10 @@ export function savePersisted(p) {
 }
 
 export function emptyDay() {
-  return { done: { ...EMPTY_DONE }, water: 0, moveWhen: 'Pomeriggio', movePos: 2, moveMoved: false, listened: false }
+  return {
+    done: { ...EMPTY_DONE }, water: 0, moveWhen: 'Pomeriggio', movePos: 2, moveMoved: false, listened: false,
+    moveMin: 0, sleep: null, meals: { colazione: false, pranzo: false, cena: false },
+  }
 }
 
 export function exportAll(p) {

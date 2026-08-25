@@ -67,3 +67,37 @@ export async function askOra({ apiKey, system, history }) {
   const txt = (out.content || []).filter(b => b.type === 'text').map(b => b.text).join('').trim()
   return txt.length < 25 ? '' : txt
 }
+
+// Report settimanale: due paragrafi caldi sui dati veri. Le note della sera
+// non vengono mai incluse — l'app promette che nessuno le legge.
+export async function weeklyReport({ apiKey, contextBlock, name }) {
+  const system = [
+    `Sei Ora, la compagna dell’app di benessere di ${name}. Scrivi in italiano, dandole del tu.`,
+    'Scrivi il suo report della settimana: esattamente due paragrafi brevi, senza titoli, senza elenchi, senza emoji.',
+    'Primo paragrafo: che cosa raccontano i suoi dati, con calore e senza giudizio — uno schema, non un voto. Riformula, non congratularti.',
+    'Secondo paragrafo: una sola cosa piccola e concreta da portare nella settimana che viene, legata ai dati.',
+    'Se i dati sono pochi, dillo con leggerezza: anche poco è un inizio. Non inventare dati che non ci sono.',
+    '',
+    contextBlock,
+  ].join('\n')
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model: MODEL,
+      max_tokens: 1024,
+      output_config: { effort: 'low' },
+      system,
+      messages: [{ role: 'user', content: 'Scrivi il mio report della settimana.' }],
+    }),
+  })
+  if (!res.ok) throw new Error(`errore ${res.status}`)
+  const out = await res.json()
+  if (out.stop_reason === 'refusal') return ''
+  return (out.content || []).filter(b => b.type === 'text').map(b => b.text).join('').trim()
+}

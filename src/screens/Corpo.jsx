@@ -1,49 +1,113 @@
+import { Check } from 'lucide-react'
+import { HARD } from '../data.js'
+import { todayKey } from '../storage.js'
+
+const MEALS = [
+  { k: 'colazione', label: 'Colazione', note: 'Anche piccola, purché ci sia' },
+  { k: 'pranzo', label: 'Pranzo', note: 'Con verdure, quando ci sta' },
+  { k: 'cena', label: 'Cena', note: 'Presto aiuta il sonno' },
+]
+
+// Insight calcolato: confronta i giorni con movimento e quelli senza,
+// guardando i picchi intensi registrati nello stesso giorno.
+function movementInsight(p) {
+  const days = Object.entries(p.days)
+  if (days.length < 4) return null
+  const spikesOn = dk => p.checkins.filter(
+    c => todayKey(new Date(c.ts)) === dk && c.intensity >= 4 && HARD.includes(c.core),
+  ).length
+  const moved = days.filter(([, d]) => d.moveMin >= 10 || d.done?.move)
+  const still = days.filter(([, d]) => !(d.moveMin >= 10 || d.done?.move))
+  if (moved.length < 2 || still.length < 2) return null
+  const avg = list => list.reduce((a, [dk]) => a + spikesOn(dk), 0) / list.length
+  const a = avg(moved), b = avg(still)
+  if (a < b) return `Nei giorni in cui ti muovi arrivano meno picchi che nei giorni fermi (${a.toFixed(1)} contro ${b.toFixed(1)} in media). Non è forza di volontà, è sistema nervoso.`
+  if (a > b) return `In questo periodo i picchi non seguono il movimento: arrivano anche nei giorni in cui cammini. Vale la pena guardare gli inneschi in Conoscerti, più che i chilometri.`
+  return `Finora movimento e picchi vanno di pari passo. Servono ancora un po' di giorni per vedere uno schema.`
+}
+
 export default function Corpo({ app }) {
   const { p, day, patchDay } = app
-  const sync = p.settings.sync
-
-  const bars = [
-    { label: 'Passi', value: '6.480 su 8.000', pct: 81, color: 'var(--sage-500)' },
-    { label: 'Minuti di movimento', value: '32 su 30', pct: 100, color: 'var(--sage-500)' },
-    { label: 'Sonno', value: '7h 10m su 8h', pct: 89, color: 'var(--terra-500)' },
-  ]
-  const meals = [
-    { name: 'Avena, frutti di bosco, yogurt', note: '8:10 · proteine 22g', tag: 'Equilibrato', tagBg: 'var(--sage-100)', tagFg: 'var(--sage-700)' },
-    { name: 'Riso avanzato con verdure', note: '13:20 · verdure 2 porzioni', tag: 'Equilibrato', tagBg: 'var(--sage-100)', tagFg: 'var(--sage-700)' },
-    { name: 'Cena non registrata', note: 'Aggiungila in due tocchi', tag: 'Da fare', tagBg: 'var(--neutral-tint)', tagFg: '#474238' },
-  ]
+  const insight = movementInsight(p)
+  const daysTracked = Object.keys(p.days).length
 
   return (
     <div className="screen">
       <div style={{ padding: '4px 0 16px' }}>
         <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 28, lineHeight: 1.1, margin: 0 }}>Corpo</h1>
-        <div className="meta" style={{ marginTop: 4 }}>
-          {sync ? 'Orologio sincronizzato · il resto lo registri tu' : 'Sincronizzazione spenta · registri tutto tu'}
-        </div>
+        <div className="meta" style={{ marginTop: 4 }}>Quello che registri tu, niente stime</div>
       </div>
 
       <div className="stack">
         <div className="card surface">
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 14 }}>
             <div className="h-card">Movimento</div>
-            <div style={{ fontSize: 12, color: 'var(--muted)' }}>{sync ? 'sincronizzato 12 min fa' : 'manuale'}</div>
+            <div style={{ fontSize: 12, color: 'var(--muted)' }}>{day.moveMin} min oggi</div>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            {bars.map(b => (
-              <div key={b.label}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 6 }}>
-                  <span style={{ fontWeight: 600 }}>{b.label}</span>
-                  <span style={{ color: 'rgba(32,30,29,.6)' }}>{b.value}</span>
-                </div>
-                <div className="body-track">
-                  <div className="body-fill" style={{ width: `${b.pct}%`, background: b.color }} />
-                </div>
-              </div>
+          <div className="body-track" style={{ marginBottom: 14 }}>
+            <div
+              className="body-fill"
+              style={{
+                width: `${Math.min(100, Math.round(100 * day.moveMin / 30))}%`,
+                background: day.moveMin >= 30 ? 'var(--sage-500)' : 'var(--terra-500)',
+              }}
+            />
+          </div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {[10, 20, 30].map(n => (
+              <button
+                key={n}
+                className="chip"
+                style={{ background: 'var(--sage-100)', color: 'var(--sage-700)', borderColor: 'rgba(122,138,94,.4)' }}
+                onClick={() => patchDay(cur => ({ moveMin: cur.moveMin + n, done: { ...cur.done, move: true } }))}
+              >
+                + {n} min
+              </button>
             ))}
+            <button className="chip" style={{ background: 'transparent', borderColor: 'rgba(32,30,29,.18)' }} onClick={() => patchDay({ moveMin: 0 })}>
+              Azzera
+            </button>
+          </div>
+          <div style={{ fontSize: 12.5, color: 'var(--muted)', lineHeight: 1.5, marginTop: 12 }}>
+            {day.moveMin >= 30
+              ? 'Mezz’ora fatta. Il resto della giornata parte da un corpo che ha già scaricato qualcosa.'
+              : 'Dieci minuti contano quanto trenta, nei giorni storti. Segna quello che è successo davvero.'}
           </div>
         </div>
 
         <div className="card sand">
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 14 }}>
+            <div className="h-card">Sonno</div>
+            <div style={{ fontSize: 12, color: 'var(--muted)' }}>
+              {day.sleep != null ? `${day.sleep} ore stanotte` : 'non ancora registrato'}
+            </div>
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {[4, 5, 6, 7, 8, 9, 10].map(h => {
+              const on = day.sleep === h
+              return (
+                <button
+                  key={h}
+                  className="chip"
+                  style={{
+                    minWidth: 44, justifyContent: 'center',
+                    background: on ? 'var(--sage-500)' : 'var(--surface)',
+                    color: on ? 'var(--surface)' : 'var(--text)',
+                    borderColor: on ? 'var(--sage-500)' : 'rgba(32,30,29,.18)',
+                  }}
+                  onClick={() => patchDay(cur => ({ sleep: cur.sleep === h ? null : h }))}
+                >
+                  {h}h
+                </button>
+              )
+            })}
+          </div>
+          <div style={{ fontSize: 12.5, color: 'var(--muted)', lineHeight: 1.5, marginTop: 12 }}>
+            Un tocco appena sveglia. Serve a vedere come si lega alle giornate, non a farti da sveglia.
+          </div>
+        </div>
+
+        <div className="card surface">
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 14 }}>
             <div className="h-card">Acqua</div>
             <div style={{ fontSize: 12, color: 'var(--muted)' }}>{day.water} {day.water === 1 ? 'bicchiere' : 'bicchieri'} su 8</div>
@@ -75,22 +139,43 @@ export default function Corpo({ app }) {
           </div>
         </div>
 
-        <div className="card surface">
+        <div className="card sand">
           <div className="h-card" style={{ marginBottom: 12 }}>Nutrimento</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            {meals.map(m => (
-              <div key={m.name} className="meal-row">
-                <span style={{ flex: 1, minWidth: 0 }}>
-                  <span style={{ display: 'block', fontSize: 15, fontWeight: 600 }}>{m.name}</span>
-                  <span style={{ display: 'block', fontSize: 12, color: 'rgba(32,30,29,.5)' }}>{m.note}</span>
-                </span>
-                <span className="tag" style={{ background: m.tagBg, color: m.tagFg }}>{m.tag}</span>
-              </div>
-            ))}
+            {MEALS.map(m => {
+              const on = day.meals[m.k]
+              return (
+                <button
+                  key={m.k}
+                  className="meal-row"
+                  style={{ border: 0, borderBottom: '1px solid rgba(32,30,29,.10)', background: 'transparent', cursor: 'pointer', textAlign: 'left', width: '100%' }}
+                  onClick={() => patchDay(cur => ({ meals: { ...cur.meals, [m.k]: !cur.meals[m.k] } }))}
+                >
+                  <span style={{
+                    width: 24, height: 24, flex: 'none', borderRadius: 999,
+                    border: `2px solid ${on ? 'var(--sage-700)' : 'rgba(32,30,29,.28)'}`,
+                    background: on ? 'var(--sage-700)' : 'transparent', color: 'var(--surface)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    {on && <Check size={13} strokeWidth={2.75} />}
+                  </span>
+                  <span style={{ flex: 1, minWidth: 0 }}>
+                    <span style={{ display: 'block', fontSize: 15, fontWeight: 600, color: on ? 'rgba(32,30,29,.5)' : 'var(--text)' }}>{m.label}</span>
+                    <span style={{ display: 'block', fontSize: 12, color: 'rgba(32,30,29,.5)' }}>{m.note}</span>
+                  </span>
+                </button>
+              )
+            })}
           </div>
-          <div style={{ fontSize: 13, color: 'rgba(32,30,29,.6)', lineHeight: 1.5, marginTop: 14 }}>
-            Nei giorni in cui pranzi con le verdure, i check-in del pomeriggio tendono alla calma invece che all’agitazione.
-            Sei settimane di dati, non un caso.
+          <div style={{ fontSize: 12.5, color: 'var(--muted)', lineHeight: 1.5, marginTop: 14 }}>
+            Nessun conteggio di calorie. Solo: hai mangiato, sì o no.
+          </div>
+        </div>
+
+        <div className="card surface">
+          <div className="h-card" style={{ marginBottom: 10 }}>Cosa dicono i tuoi giorni</div>
+          <div style={{ fontSize: 14, color: 'rgba(32,30,29,.65)', lineHeight: 1.55 }}>
+            {insight || `Ancora pochi giorni registrati (${daysTracked}). Continua a segnare movimento e sonno: dopo qualche giorno qui compare come si legano ai tuoi picchi.`}
           </div>
         </div>
       </div>
