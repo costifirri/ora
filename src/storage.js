@@ -4,6 +4,16 @@
 import { DEFAULT_PEOPLE } from './data.js'
 
 const KEY = 'ora-state-v1'
+// La chiave API vive in un cassetto suo, sempre e solo su questo dispositivo:
+// così non può finire per sbaglio nel documento sincronizzato.
+const API_KEY = 'ora-apikey'
+
+export function readApiKey() {
+  try { return localStorage.getItem(API_KEY) || '' } catch { return '' }
+}
+function writeApiKey(v) {
+  try { v ? localStorage.setItem(API_KEY, v) : localStorage.removeItem(API_KEY) } catch { /* ignora */ }
+}
 
 export function todayKey(d = new Date()) {
   const p = n => String(n).padStart(2, '0')
@@ -32,7 +42,7 @@ export const DEFAULT_PERSISTED = {
 export function loadPersisted() {
   try {
     const raw = localStorage.getItem(KEY)
-    if (!raw) return structuredClone(DEFAULT_PERSISTED)
+    if (!raw) return { ...structuredClone(DEFAULT_PERSISTED), settings: { ...DEFAULT_PERSISTED.settings, apiKey: readApiKey() } }
     const data = JSON.parse(raw)
     // I giorni salvati da versioni precedenti potrebbero non avere i campi nuovi
     const days = Object.fromEntries(
@@ -49,7 +59,8 @@ export function loadPersisted() {
       days,
       // Una lista vuota è una scelta legittima; solo l'assenza va seminata.
       people: Array.isArray(data.people) ? data.people : structuredClone(DEFAULT_PEOPLE),
-      settings: { ...DEFAULT_PERSISTED.settings, ...(data.settings || {}) },
+      // La chiave arriva sempre dal cassetto locale, mai dal blob salvato.
+      settings: { ...DEFAULT_PERSISTED.settings, ...(data.settings || {}), apiKey: readApiKey() },
     }
   } catch {
     return structuredClone(DEFAULT_PERSISTED)
@@ -57,7 +68,30 @@ export function loadPersisted() {
 }
 
 export function savePersisted(p) {
-  try { localStorage.setItem(KEY, JSON.stringify(p)) } catch { /* quota o modalità privata: si continua in memoria */ }
+  try {
+    writeApiKey(p.settings.apiKey)
+    const { apiKey, ...settings } = p.settings
+    localStorage.setItem(KEY, JSON.stringify({ ...p, settings }))
+  } catch { /* quota o modalità privata: si continua in memoria */ }
+}
+
+// Adotta lo stato che arriva dal cloud, tenendo la chiave di questo dispositivo.
+export function adoptCloud(cloud) {
+  const days = Object.fromEntries(
+    Object.entries(cloud.days || {}).map(([k, v]) => [k, {
+      ...emptyDay(),
+      ...v,
+      done: { ...EMPTY_DONE, ...(v.done || {}) },
+      meals: { colazione: false, pranzo: false, cena: false, ...(v.meals || {}) },
+    }]),
+  )
+  return {
+    ...structuredClone(DEFAULT_PERSISTED),
+    ...cloud,
+    days,
+    people: Array.isArray(cloud.people) ? cloud.people : structuredClone(DEFAULT_PEOPLE),
+    settings: { ...DEFAULT_PERSISTED.settings, ...(cloud.settings || {}), apiKey: readApiKey() },
+  }
 }
 
 export function emptyDay() {

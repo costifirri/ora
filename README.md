@@ -69,7 +69,23 @@ portati verbatim dal prototipo (`src/ai.js`).
 
 Le tre righe del rituale della sera **non vengono mai inviate all'AI**: né in chat né nel report.
 L'app promette "nessuno le leggerà" e il blocco di contesto lo dichiara esplicitamente al modello.
-Sono rileggibili solo in *Conoscerti*, sul dispositivo.
+Sono rileggibili in *Te → Come stai*.
+
+La **chiave API non lascia mai il dispositivo**: vive in un cassetto localStorage separato
+(`ora-apikey`) e viene esclusa da tutto ciò che si sincronizza (`withoutSecrets` in `src/cloud.js`).
+È una credenziale con addebiti: un database compromesso non deve poter diventare una bolletta.
+
+## Account (facoltativi)
+
+`src/firebase.js` nasce con i campi vuoti: così l'app è interamente locale, senza rete né account.
+Compilando la configurazione di un progetto Firebase si attivano registrazione via email,
+accesso e sincronizzazione — tutto quello che registri segue l'account su qualsiasi dispositivo,
+con regole Firestore che lasciano leggere solo al proprietario.
+
+Istruzioni complete, regole di sicurezza e costi: **[FIREBASE.md](FIREBASE.md)**.
+
+Il codice di Firebase è caricato con un import dinamico: chi non attiva gli account non lo scarica
+nemmeno.
 
 ## Scelte rispetto al prototipo
 

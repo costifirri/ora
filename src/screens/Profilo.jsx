@@ -1,5 +1,8 @@
+import { useState } from 'react'
 import { ArrowLeft } from 'lucide-react'
 import { TONES } from '../data.js'
+import { deleteAccount } from '../cloud.js'
+import { authError } from '../firebase.js'
 
 const INTENTS = [
   { label: 'Imparare a meditare', tone: 'sage' },
@@ -9,8 +12,10 @@ const INTENTS = [
 ]
 
 export default function Profilo({ app }) {
-  const { p, setS, setP, name, exportData } = app
+  const { p, setS, setP, name, exportData, user, hasAccounts, leave, flash } = app
   const gentle = p.settings.gentle
+  const [killing, setKilling] = useState(false)
+  const [pw, setPw] = useState('')
 
   return (
     <div className="screen">
@@ -95,14 +100,69 @@ export default function Profilo({ app }) {
         <div className="card surface">
           <div className="h-card" style={{ marginBottom: 10 }}>I tuoi dati</div>
           <div style={{ fontSize: 13, color: 'rgba(32,30,29,.6)', lineHeight: 1.5, marginBottom: 14 }}>
-            Tutto quello che registri resta su questo dispositivo. Niente account, niente server.
+            {user
+              ? <>Il tuo spazio è legato a <strong>{user.email}</strong>: quello che registri ti segue su qualsiasi telefono, e nessun altro account può leggerlo. La chiave di Ora fa eccezione — resta solo qui.</>
+              : 'Tutto quello che registri resta su questo dispositivo. Niente account, niente server.'}
           </div>
           <button className="btn-outline" style={{ width: '100%', minHeight: 46 }} onClick={exportData}>
             Esporta i dati
           </button>
+
+          {user && (
+            <>
+              <button className="btn-outline" style={{ width: '100%', minHeight: 46, marginTop: 10 }} onClick={leave}>
+                Esci dal mio spazio
+              </button>
+
+              {!killing ? (
+                <button
+                  className="step-link"
+                  style={{ color: 'rgba(32,30,29,.45)', marginTop: 10 }}
+                  onClick={() => setKilling(true)}
+                >
+                  Elimina il mio spazio e tutti i dati
+                </button>
+              ) : (
+                <div style={{ marginTop: 14, background: 'var(--terra-100)', border: '1px solid rgba(198,113,57,.4)', borderRadius: 24, padding: '16px 18px' }}>
+                  <div style={{ fontSize: 13, lineHeight: 1.55, color: '#8c491a', marginBottom: 12 }}>
+                    Sparisce tutto: check-in, note della sera, conversazioni. Non è recuperabile.
+                    Se vuoi tenerne una copia, esporta i dati prima. Scrivi la password per confermare.
+                  </div>
+                  <input
+                    className="apikey-input" type="password" value={pw}
+                    onChange={e => setPw(e.target.value)} placeholder="La tua password" aria-label="Password"
+                  />
+                  <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+                    <button
+                      className="btn-outline" style={{ flex: 1, minHeight: 46 }}
+                      onClick={() => { setKilling(false); setPw('') }}
+                    >
+                      Lascia stare
+                    </button>
+                    <button
+                      style={{ flex: 1, minHeight: 46, border: 0, borderRadius: 999, background: 'var(--terra-600)', color: 'var(--surface)', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}
+                      onClick={() => {
+                        deleteAccount(pw)
+                          .then(() => { setPw(''); setKilling(false) })
+                          .catch(err => flash(authError(err.code)))
+                      }}
+                    >
+                      Elimina
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {!user && hasAccounts && (
+            <div style={{ fontSize: 12, color: 'rgba(32,30,29,.45)', marginTop: 10, lineHeight: 1.45 }}>
+              Non sei collegata a nessuno spazio.
+            </div>
+          )}
         </div>
 
-        <div className="fineprint">Ora · v3.2</div>
+        <div className="fineprint">Ora · v4.0</div>
       </div>
     </div>
   )

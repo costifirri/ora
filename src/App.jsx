@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { FLOW, COURSE, CUES, HARD, CORE, HELPERS, SEED_TRIGGERS, SEED_WEEK, TRIGGER_TAGS, breath, answerFor } from './data.js'
 import { buildSystem, askOra, weeklyReport, askOpener } from './ai.js'
-import { loadPersisted, savePersisted, todayKey, emptyDay, exportAll } from './storage.js'
+import { loadPersisted, savePersisted, adoptCloud, todayKey, emptyDay, exportAll } from './storage.js'
+import { isConfigured } from './firebase.js'
+import { watchAuth, loadCloud, saveCloud, signOutNow } from './cloud.js'
+import Auth from './screens/Auth.jsx'
 import Oggi from './screens/Oggi.jsx'
 import Te from './screens/Te.jsx'
 import Checkin from './screens/Checkin.jsx'
@@ -32,13 +35,54 @@ const EPHEMERAL = {
 export default function App() {
   const [p, setPRaw] = useState(loadPersisted)
   const [s, setSRaw] = useState(EPHEMERAL)
+  // undefined = sto ancora guardando chi sei; null = nessun account
+  const [user, setUser] = useState(isConfigured ? undefined : null)
+  const [syncing, setSyncing] = useState(false)
   const toastT = useRef(null)
   const replyT = useRef(null)
+  const cloudT = useRef(null)
+  const uidRef = useRef(null)
 
   const setS = patch => setSRaw(prev => ({ ...prev, ...(typeof patch === 'function' ? patch(prev) : patch) }))
   const setP = patch => setPRaw(prev => ({ ...prev, ...(typeof patch === 'function' ? patch(prev) : patch) }))
 
   useEffect(() => { savePersisted(p) }, [p])
+
+  // Chi sei: la sessione resta valida anche offline, una volta entrata.
+  useEffect(() => {
+    if (!isConfigured) return
+    let stop
+    watchAuth(u => setUser(u)).then(fn => { stop = fn })
+    return () => { if (stop) stop() }
+  }, [])
+
+  // Al primo accesso: se lassù c'è già qualcosa lo adotto, altrimenti
+  // ci porto quello che c'è su questo dispositivo.
+  useEffect(() => {
+    if (!user) { uidRef.current = null; return }
+    if (uidRef.current === user.uid) return
+    uidRef.current = user.uid
+    let alive = true
+    setSyncing(true)
+    loadCloud(user.uid)
+      .then(cloud => {
+        if (!alive) return
+        if (cloud) setPRaw(adoptCloud(cloud))
+        else return saveCloud(user.uid, p)
+      })
+      .catch(() => {})
+      .finally(() => { if (alive) setSyncing(false) })
+    return () => { alive = false }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user])
+
+  // Salvataggio in cloud, con un respiro di ritardo per non scrivere a ogni tocco.
+  useEffect(() => {
+    if (!user || uidRef.current !== user.uid || syncing) return
+    clearTimeout(cloudT.current)
+    cloudT.current = setTimeout(() => { saveCloud(user.uid, p).catch(() => {}) }, 1500)
+    return () => clearTimeout(cloudT.current)
+  }, [p, user, syncing])
 
   // Un solo tick da 100ms guida respiro, cue narrate e countdown della sera.
   useEffect(() => {
@@ -275,9 +319,15 @@ export default function App() {
     breath: t => breath(t, pattern),
     go: screen => setS({ screen }),
     exportData: () => exportAll(p),
+    user, hasAccounts: isConfigured,
+    leave: () => { signOutNow().then(() => { setPRaw(loadPersisted()); setS({ screen: 'oggi' }) }) },
   }
 
   const showTabs = ['oggi', 'te', 'pratica'].includes(s.screen)
+
+  // Con gli account attivi, prima di tutto c'è la porta.
+  if (user === undefined) return <div className="shell" />
+  if (isConfigured && user === null) return <div className="shell"><Auth /></div>
 
   return (
     <div className="shell">
