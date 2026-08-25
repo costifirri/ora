@@ -271,3 +271,60 @@ export function answerFor(text) {
     return 'Non ho una risposta pronta, ma ho i tuoi dati: i picchi arrivano di sera, dopo giornate senza pause, e passano prima quando cammini o nomini l’emozione a voce. Da dove vuoi partire?'
   return 'Ti seguo. Dimmi una cosa in più: che cosa è successo poco prima, e dove lo senti nel corpo?'
 }
+
+// --- Una cosa per oggi -----------------------------------------------------
+// Un motivo onesto per aprire l'app: qualcosa di nuovo da leggere, non un
+// debito da saldare. Con la chiave la scrive Ora conoscendoti; senza, ruota
+// da qui — offline e gratis.
+
+export const DAILY_THOUGHTS = [
+  'Le emozioni forti durano meno di quanto sembra. È l’attesa che le fa sembrare lunghe.',
+  'Non serve avere voglia di fare una cosa per farla. Spesso la voglia arriva dopo, non prima.',
+  'Quando non sai cosa dire a qualcuno, una domanda vale più di una frase giusta.',
+  'La stanchezza mente sul futuro: di sera tutto sembra più difficile di quanto sarà domani.',
+  'Fermarsi non è perdere tempo. È l’unico modo per accorgersi di dove si sta andando.',
+  'Le cose che rimandi non pesano per quanto sono grandi, ma per quante volte le hai guardate.',
+  'Una giornata storta non è una settimana storta, a meno che tu non gliela lasci diventare.',
+  'Chi ti conosce davvero si vede da quante domande fa, non da quanti consigli dà.',
+  'Il corpo si calma prima della testa. È per questo che si comincia dal respiro.',
+  'Dire "non lo so" è quasi sempre più utile che dire una cosa qualsiasi per riempire il silenzio.',
+  'Le abitudini non si costruiscono nei giorni facili. Si costruiscono nei giorni in cui le fai male.',
+  'Quello che chiami pigrizia, spesso è solo un compito descritto male.',
+  'Non tutto quello che senti va risolto. Alcune cose vanno solo attraversate.',
+  'La gentilezza verso te stessa non è indulgenza: è la differenza tra ricominciare e smettere.',
+]
+
+export const DAILY_FACTS = [
+  'Il nervo vago collega il cervello a cuore e intestino: è il motivo per cui un espiro lungo rallenta davvero il battito, senza che tu debba crederci.',
+  'Gli esseri umani sono l’unica specie conosciuta che arrossisce. Darwin la chiamava "la più peculiare delle espressioni".',
+  'Il cervello consuma circa il venti per cento delle tue energie pur pesando il due per cento del corpo. Pensare stanca letteralmente.',
+  'Dormire poco altera il riconoscimento delle espressioni altrui: dopo una notte corta si tende a leggere ostilità dove non c’è.',
+  'Camminare a passo lento attiva aree cerebrali legate al pensiero divergente: è per questo che le idee arrivano in movimento.',
+  'Le lacrime emotive hanno una composizione chimica diversa da quelle causate dalla cipolla.',
+  'Il cuore ha un proprio sistema di neuroni, circa quarantamila: non pensa, ma comunica costantemente con il cervello.',
+  'Nominare un’emozione riduce l’attività dell’amigdala. In laboratorio si chiama "affect labeling": dirlo la abbassa davvero.',
+  'La percezione del tempo cambia con l’attenzione: le giornate piene sembrano lunghe mentre le vivi e brevi quando le ricordi.',
+  'Il contatto con la luce del mattino, anche solo dieci minuti, sposta l’orologio interno più di qualsiasi integratore.',
+  'Gli oceani producono più della metà dell’ossigeno che respiri, soprattutto grazie a un plancton invisibile a occhio nudo.',
+  'La memoria non registra: ricostruisce. Ogni volta che ricordi qualcosa, lo riscrivi leggermente.',
+  'Le api riconoscono i volti umani usando lo stesso meccanismo che usano per distinguere i fiori.',
+  'Il silenzio assoluto è insopportabile per la maggior parte delle persone: dopo pochi minuti il cervello inizia a generare suoni propri.',
+]
+
+export const SEGNI = [
+  'Ariete', 'Toro', 'Gemelli', 'Cancro', 'Leone', 'Vergine',
+  'Bilancia', 'Scorpione', 'Sagittario', 'Capricorno', 'Acquario', 'Pesci',
+]
+
+export const DAILY_KINDS = [
+  { k: 'pensiero', label: 'Un pensiero', note: 'Una riga su cui posarsi un momento.' },
+  { k: 'fatto', label: 'Una curiosità', note: 'Qualcosa di vero che forse non sapevi.' },
+  { k: 'segno', label: 'Il tuo segno', note: 'L’oroscopo del giorno, scritto da Ora. Per il piacere di leggerlo.' },
+]
+
+// Ruota per giorno: stabile entro la giornata, diversa domani.
+export function localDaily(kind, now = new Date()) {
+  const idx = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000)
+  const list = kind === 'fatto' ? DAILY_FACTS : DAILY_THOUGHTS
+  return list[idx % list.length]
+}

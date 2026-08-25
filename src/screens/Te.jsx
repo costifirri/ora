@@ -1,4 +1,4 @@
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, CalendarDays } from 'lucide-react'
 import CorpoSection from '../sections/CorpoSection.jsx'
 import SchemiSection from '../sections/SchemiSection.jsx'
 import LegamiSection from '../sections/LegamiSection.jsx'
@@ -39,6 +39,20 @@ export default function Te({ app }) {
                 ? `${p.memories.length ? p.memories.length + ' cose che mi hai detto' : 'La tua scheda'}${p.chapters.length ? ` · ${p.chapters.length} mes${p.chapters.length === 1 ? 'e' : 'i'} raccontat${p.chapters.length === 1 ? 'o' : 'i'}` : ''}`
                 : 'Raccontami chi sei, così ti parlo davvero'}
             </span>
+          </span>
+          <ArrowRight size={18} strokeWidth={2.75} color="var(--sage-500)" />
+        </button>
+
+        <button className="talk-row" onClick={() => setS({ screen: 'calendario' })}>
+          <span style={{
+            width: 38, height: 38, flex: 'none', borderRadius: 999, background: 'var(--sand)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <CalendarDays size={18} strokeWidth={2.75} color="var(--sage-700)" />
+          </span>
+          <span style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
+            <span style={{ display: 'block', fontSize: 15, fontWeight: 600 }}>Le tue giornate</span>
+            <span style={{ display: 'block', fontSize: 12, color: 'var(--muted)' }}>Rivedi un giorno qualsiasi, com'è andato davvero</span>
           </span>
           <ArrowRight size={18} strokeWidth={2.75} color="var(--sage-500)" />
         </button>

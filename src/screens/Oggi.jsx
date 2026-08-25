@@ -100,6 +100,15 @@ export default function Oggi({ app }) {
           <ArrowRight size={18} strokeWidth={2.75} color="var(--sage-500)" />
         </button>
 
+        {p.daily?.text && (
+          <div className="daily-card">
+            <div className="kicker" style={{ color: 'rgba(86,99,63,.8)', marginBottom: 8 }}>
+              {p.daily.kind === 'segno' ? (p.profile.segno || 'Il tuo segno') : p.daily.kind === 'fatto' ? 'Lo sapevi' : 'Un pensiero'}
+            </div>
+            <div className="daily-text">{p.daily.text}</div>
+          </div>
+        )}
+
         {card.later && (
           <div style={{ fontSize: 12.5, color: 'rgba(32,30,29,.42)', textAlign: 'center', padding: '4px 20px', lineHeight: 1.5 }}>
             {card.later}

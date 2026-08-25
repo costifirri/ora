@@ -209,3 +209,36 @@ export async function monthChapter({ apiKey, settings, monthLabel, material, use
   if (out.stop_reason === 'refusal') return ''
   return (out.content || []).filter(b => b.type === 'text').map(b => b.text).join('').trim()
 }
+
+// La cosa di oggi, scritta conoscendoti. Una chiamata al giorno.
+export async function dailyLine({ apiKey, settings, kind, segno, contextBlock, name }) {
+  const per = {
+    pensiero: 'Scrivi un pensiero per oggi: una o due frasi, concrete, su cui posarsi un momento. Niente retorica motivazionale, niente "puoi farcela", niente imperativi. Se qualcosa nella sua situazione lo rende pertinente, lascia che si senta — senza mai nominare i suoi dati.',
+    fatto: 'Scrivi una curiosità vera e verificabile, una o due frasi: qualcosa su corpo, mente, natura o linguaggio che valga la pena sapere. Non inventare nulla: se non sei sicura che sia vero, scegli qualcos’altro. Nessun collegamento forzato alla sua giornata.',
+    segno: `Scrivi l’oroscopo di oggi per il segno ${segno || 'del giorno'}: due o tre frasi, calde e leggere, nel linguaggio degli oroscopi ma senza promesse assurde e senza previsioni su salute o denaro. È un piacere di lettura, non una profezia: che sia bello da leggere, non che sembri vero.`,
+  }
+  const system = [
+    `Sei Ora, la compagna di ${name}. Scrivi in italiano, dandole del tu.`,
+    per[kind] || per.pensiero,
+    'Solo il testo: nessun titolo, nessuna introduzione, nessuna emoji, nessun elenco, nessuna firma.',
+    '',
+    'Quello che sai di lei (usalo per il tono, non per citarlo):',
+    contextBlock,
+  ].join('\n')
+  const model = modelOf(settings)
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: headers(apiKey),
+    body: JSON.stringify({
+      model,
+      max_tokens: 400,
+      ...tuning(model),
+      system,
+      messages: [{ role: 'user', content: 'Scrivi quella di oggi.' }],
+    }),
+  })
+  if (!res.ok) throw new Error(`errore ${res.status}`)
+  const out = await res.json()
+  if (out.stop_reason === 'refusal') return ''
+  return (out.content || []).filter(b => b.type === 'text').map(b => b.text).join('').trim()
+}

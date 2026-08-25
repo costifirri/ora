@@ -32,10 +32,11 @@ export const DEFAULT_PERSISTED = {
   people: structuredClone(DEFAULT_PEOPLE), // {id, name, meta, opener} — modificabili
 
   // --- Memoria: chi sei, cosa mi hai detto, cosa ho capito ---
-  profile: { lavoro: '', ritmi: '', pesa: '', bene: '', voce: '' },
+  profile: { lavoro: '', ritmi: '', pesa: '', bene: '', voce: '', segno: '' },
   memories: [],        // {id, text, ts, source:'chat'|'tu'} — cose durature che le hai detto
   chapters: [],        // {month:'2026-08', text, ts} — il racconto di un mese, scritto da Ora
   memoryUpTo: 0,       // fin dove ho gia' estratto ricordi dalla chat (indice messaggi)
+  daily: null,         // {date, forKind, kind, text} — la cosa di oggi
 
   intention: '',       // intenzione settimanale "se X, allora Y"
   weeklyReport: null,  // {text, ts} — ultimo report generato
@@ -45,7 +46,7 @@ export const DEFAULT_PERSISTED = {
   qIdx: 0,
   seraQIdx: 0,
   messages: [{ from: 'ora', text: 'Ciao, sono Ora. Conosco la tua giornata, non i tuoi contatti. Come va, adesso?' }],
-  settings: { gentle: true, apiKey: '', model: DEFAULT_MODEL, name: 'Costanza', pattern: 'Calm six' },
+  settings: { gentle: true, apiKey: '', model: DEFAULT_MODEL, dailyKind: 'pensiero', name: 'Costanza', pattern: 'Calm six' },
 }
 
 export function loadPersisted() {

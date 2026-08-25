@@ -1,4 +1,5 @@
 import { ArrowLeft, Trash2 } from 'lucide-react'
+import { SEGNI, DAILY_KINDS } from '../data.js'
 
 // I campi di "Chi sei": pochi, stabili, e sempre nelle mani tue.
 const CAMPI = [
@@ -12,7 +13,7 @@ const CAMPI = [
 const fmt = ts => new Date(ts).toLocaleDateString('it-IT', { day: 'numeric', month: 'long' })
 
 export default function Memoria({ app }) {
-  const { p, s, setS, setP, name, pendingMonth, monthName, writeChapter, liveAI } = app
+  const { p, s, setS, setP, name, pendingMonth, monthName, writeChapter, liveAI, dailyKind } = app
 
   const setField = (k, v) => setP(prev => ({ profile: { ...prev.profile, [k]: v } }))
   const forget = id => setP(prev => ({ memories: prev.memories.filter(m => m.id !== id) }))
@@ -57,6 +58,58 @@ export default function Memoria({ app }) {
               </div>
             ))}
           </div>
+        </div>
+
+        <div className="card sand">
+          <div className="h-card" style={{ marginBottom: 4 }}>Una cosa per te, ogni giorno</div>
+          <div style={{ fontSize: 13, color: 'rgba(32,30,29,.6)', lineHeight: 1.5, marginBottom: 12 }}>
+            Compare in home e cambia ogni giorno. Con la chiave la scrivo io, conoscendoti.
+          </div>
+          <div className="lens-row" style={{ background: 'rgba(32,30,29,.06)' }}>
+            {DAILY_KINDS.map(k => (
+              <button
+                key={k.k}
+                className={`lens-btn${dailyKind === k.k ? ' on' : ''}`}
+                onClick={() => setP(prev => ({ settings: { ...prev.settings, dailyKind: k.k } }))}
+              >
+                {k.label}
+              </button>
+            ))}
+          </div>
+          <div style={{ fontSize: 12.5, color: 'rgba(32,30,29,.6)', lineHeight: 1.5, marginTop: 10 }}>
+            {DAILY_KINDS.find(k => k.k === dailyKind)?.note}
+          </div>
+
+          {dailyKind === 'segno' && (
+            <div style={{ marginTop: 14 }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: 'rgba(32,30,29,.5)', marginBottom: 8 }}>Il tuo segno</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {SEGNI.map(sg => {
+                  const on = p.profile.segno === sg
+                  return (
+                    <button
+                      key={sg}
+                      className="chip"
+                      style={{
+                        minHeight: 36, padding: '6px 12px', fontSize: 12.5,
+                        background: on ? 'var(--sage-500)' : 'var(--surface)',
+                        color: on ? 'var(--surface)' : 'var(--text)',
+                        borderColor: on ? 'var(--sage-500)' : 'rgba(32,30,29,.18)',
+                      }}
+                      onClick={() => setP(prev => ({ profile: { ...prev.profile, segno: on ? '' : sg } }))}
+                    >
+                      {sg}
+                    </button>
+                  )
+                })}
+              </div>
+              {!liveAI && (
+                <div style={{ fontSize: 12, color: 'rgba(32,30,29,.5)', marginTop: 10, lineHeight: 1.45 }}>
+                  Senza chiave l'oroscopo non posso scriverlo: in home resta un pensiero.
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="card surface">
