@@ -9,7 +9,7 @@ export default function Pausa({ app }) {
   return (
     <div className="screen full sandbg">
       <div className="full-head">
-        <button className="btn-back" onClick={() => setS({ screen: 'home' })} aria-label="Indietro">
+        <button className="btn-back" onClick={() => setS({ screen: 'oggi' })} aria-label="Indietro">
           <ArrowLeft size={18} strokeWidth={2.75} />
         </button>
         <div className="kicker">{ps.kicker}</div>

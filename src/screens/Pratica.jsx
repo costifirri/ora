@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight, Check } from 'lucide-react'
+import { ArrowRight, Check } from 'lucide-react'
 import { COURSE, PATTERNS } from '../data.js'
 
 export default function Pratica({ app }) {
@@ -14,17 +14,12 @@ export default function Pratica({ app }) {
 
   return (
     <div className="screen">
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0 0 14px' }}>
-        <button className="btn-back" onClick={() => setS({ screen: 'home' })} aria-label="Indietro">
-          <ArrowLeft size={18} strokeWidth={2.75} />
-        </button>
-        <div style={{ minWidth: 0 }}>
-          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 24, lineHeight: 1.1, margin: 0 }}>Imparare a meditare</h2>
-          <div style={{ fontSize: 12.5, color: 'var(--muted)' }}>
-            {gentle
-              ? `${doneN === 0 ? 'Si comincia dal primo passo' : doneN === 1 ? 'Un passo fatto' : doneN + ' passi fatti'}. Il percorso aspetta te, non il contrario.`
-              : `${doneN} di 7 · un passo alla volta`}
-          </div>
+      <div style={{ padding: '4px 0 16px' }}>
+        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 28, lineHeight: 1.1, margin: 0 }}>Pratica</h1>
+        <div className="meta" style={{ marginTop: 4 }}>
+          {gentle
+            ? `${doneN === 0 ? 'Si comincia dal primo passo' : doneN === 1 ? 'Un passo fatto' : doneN + ' passi fatti'}. Il percorso aspetta te, non il contrario.`
+            : `${doneN} di 7 · un passo alla volta`}
         </div>
       </div>
 

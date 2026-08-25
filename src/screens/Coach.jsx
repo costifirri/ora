@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { ArrowUp } from 'lucide-react'
+import { ArrowLeft, ArrowUp } from 'lucide-react'
 
 const PROMPTS = [
   'Mi sono arrabbiata, aiutami a capire',
@@ -20,6 +20,9 @@ export default function Coach({ app }) {
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
       <div className="coach-head">
+        <button className="btn-back" onClick={() => setS({ screen: 'oggi' })} aria-label="Indietro">
+          <ArrowLeft size={18} strokeWidth={2.75} />
+        </button>
         <span className="coach-avatar">O</span>
         <span style={{ flex: 1, minWidth: 0 }}>
           <span style={{ display: 'block', fontFamily: 'var(--font-display)', fontSize: 18 }}>Ora</span>

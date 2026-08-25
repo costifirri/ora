@@ -12,7 +12,7 @@ export default function Checkin({ app }) {
   return (
     <div className="screen full">
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, minHeight: 48 }}>
-        <button className="btn-back" onClick={() => setS({ screen: 'home' })} aria-label="Indietro">
+        <button className="btn-back" onClick={() => setS({ screen: 'oggi' })} aria-label="Indietro">
           <ArrowLeft size={18} strokeWidth={2.75} />
         </button>
         <div className="kicker">{core ? 'Passo due di due' : 'Passo uno di due'}</div>

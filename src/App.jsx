@@ -2,25 +2,24 @@ import { useEffect, useRef, useState } from 'react'
 import { FLOW, COURSE, CUES, HARD, CORE, HELPERS, PEOPLE, SEED_TRIGGERS, SEED_WEEK, TRIGGER_TAGS, breath, answerFor } from './data.js'
 import { buildSystem, askOra, weeklyReport } from './ai.js'
 import { loadPersisted, savePersisted, todayKey, emptyDay, exportAll } from './storage.js'
-import Home from './screens/Home.jsx'
+import Oggi from './screens/Oggi.jsx'
+import Te from './screens/Te.jsx'
 import Checkin from './screens/Checkin.jsx'
 import Pausa from './screens/Pausa.jsx'
 import Pratica from './screens/Pratica.jsx'
 import Session from './screens/Session.jsx'
 import Sera from './screens/Sera.jsx'
-import Inneschi from './screens/Inneschi.jsx'
-import Corpo from './screens/Corpo.jsx'
-import Legami from './screens/Legami.jsx'
 import Coach from './screens/Coach.jsx'
 import Profilo from './screens/Profilo.jsx'
 
 const TABS = [
-  { id: 'home', label: 'Flusso' }, { id: 'body', label: 'Corpo' },
-  { id: 'legami', label: 'Legami' }, { id: 'coach', label: 'Ora' }, { id: 'profile', label: 'Tu' },
+  { id: 'oggi', label: 'Ora' },
+  { id: 'te', label: 'Te' },
+  { id: 'pratica', label: 'Pratica' },
 ]
 
 const EPHEMERAL = {
-  screen: 'home',
+  screen: 'oggi', teTab: 'come',
   core: null, nuance: null, intensity: 3, checkinTag: null,
   running: false, t: 0, sessionKind: 'respiro', sessionMins: 8, cue: 0, flowKey: null, courseIdx: null,
   pausaStep: 0, pausaT: 0,
@@ -161,7 +160,7 @@ export default function App() {
         return { courseDone, courseStep: next === -1 ? COURSE.length - 1 : next }
       })
     }
-    setS({ screen: key ? 'home' : 'pratica', running: false, flowKey: null, courseIdx: null })
+    setS({ screen: key ? 'oggi' : 'pratica', running: false, flowKey: null, courseIdx: null })
     if (ran) flash(key === 'letto' ? 'Buonanotte. Domani il flusso riparte dalla colazione.' : 'Ti sei seduta. È tutto quello che serviva.')
   }
 
@@ -172,7 +171,7 @@ export default function App() {
     const goPausa = HARD.includes(core.key) && s.intensity >= 4
     setP(prev => ({ checkins: [...prev.checkins, { word, core: core.key, intensity: s.intensity, tag: s.checkinTag || undefined, ts: Date.now() }] }))
     markDone('checkin')
-    setS({ screen: goPausa ? 'pausa' : 'home', pausaStep: 0, pausaT: 0, checkinTag: null })
+    setS({ screen: goPausa ? 'pausa' : 'oggi', pausaStep: 0, pausaT: 0, checkinTag: null })
     flash(goPausa
       ? `Registrato: ${word.toLowerCase()}. Prima di tutto il resto, novanta secondi.`
       : `Registrato: ${word.toLowerCase()}. Ora cercherà uno schema, non un problema.`)
@@ -222,7 +221,7 @@ export default function App() {
   // Registra la risposta scelta nel Momento difficile: è il dato che conta.
   const logPauseChoice = (label, word) => {
     setP(prev => ({ pauseLog: [...prev.pauseLog, { choice: label, ts: Date.now() }] }))
-    setS({ screen: 'home' })
+    setS({ screen: 'oggi' })
     flash(`Hai scelto ${word}. Questa è una risposta, non una reazione: contala.`)
   }
 
@@ -261,19 +260,17 @@ export default function App() {
     exportData: () => exportAll(p),
   }
 
-  const showTabs = ['home', 'body', 'legami', 'coach', 'profile'].includes(s.screen)
+  const showTabs = ['oggi', 'te', 'pratica'].includes(s.screen)
 
   return (
     <div className="shell">
-      {s.screen === 'home' && <Home app={app} />}
+      {s.screen === 'oggi' && <Oggi app={app} />}
+      {s.screen === 'te' && <Te app={app} />}
+      {s.screen === 'pratica' && <Pratica app={app} />}
       {s.screen === 'checkin' && <Checkin app={app} />}
       {s.screen === 'pausa' && <Pausa app={app} />}
-      {s.screen === 'pratica' && <Pratica app={app} />}
       {s.screen === 'session' && <Session app={app} />}
       {s.screen === 'sera' && <Sera app={app} />}
-      {s.screen === 'inneschi' && <Inneschi app={app} />}
-      {s.screen === 'body' && <Corpo app={app} />}
-      {s.screen === 'legami' && <Legami app={app} />}
       {s.screen === 'coach' && <Coach app={app} />}
       {s.screen === 'profile' && <Profilo app={app} />}
 

@@ -20,14 +20,14 @@ export default function Sera({ app }) {
     if (s.seraStep < 2) { setS(prev => ({ seraStep: prev.seraStep + 1 })); return }
     if (s.seraDraft.trim()) setP(prev => ({ seraNotes: [...prev.seraNotes, { text: s.seraDraft.trim(), ts: Date.now() }] }))
     markDone('sera')
-    setS({ screen: 'home', seraDraft: '' })
+    setS({ screen: 'oggi', seraDraft: '' })
     flash('Serata chiusa. Domani ti ritrovi la domanda in cima a Oggi.')
   }
 
   return (
     <div className="screen full dark">
       <div className="full-head">
-        <button className="btn-back" onClick={() => setS({ screen: 'home' })} aria-label="Indietro">
+        <button className="btn-back" onClick={() => setS({ screen: 'oggi' })} aria-label="Indietro">
           <ArrowLeft size={18} strokeWidth={2.75} />
         </button>
         <div className="kicker">{KICKERS[s.seraStep]}</div>

@@ -5,10 +5,27 @@ Implementazione in produzione del design handoff `design_handoff_ora_wellness`: 
 
 ## Che cos'è
 
-Un flusso guidato della giornata — dalla colazione al letto, senza orari — più quattro sezioni:
-**Corpo** (movimento, acqua, pasti), **Legami** (conversazioni vere), **Ora** (compagna AI) e
-**Tu** (profilo e impostazioni). La "Modalità senza sensi di colpa" è attiva di default e nasconde
-serie, punteggi e conteggi in tutta l'app.
+Una presenza, non uno schedario. L'app apre su **una cosa sola** — quella che conta adesso — scritta
+con la voce di Ora. La "Modalità senza sensi di colpa" è attiva di default e nasconde serie,
+punteggi e conteggi ovunque.
+
+### Architettura (v3)
+
+Tre tab, più due schermate raggiungibili da lì:
+
+| Dove | Cosa | Uso |
+| --- | --- | --- |
+| **Ora** (home) | Una scheda sola: la riga di Ora, la cosa di adesso, l'azione. Sotto: Momento difficile e l'ingresso alla conversazione. | Quotidiano, molte volte al giorno |
+| **Te** | Sintesi della settimana + la tua regola, poi tre lenti: *Come stai* (emozioni, inneschi, note), *Corpo*, *Legami* | Riflessione, una volta ogni tanto |
+| **Pratica** | Il percorso di meditazione e le pratiche brevi | Quando ti siedi |
+| Chat con Ora | Dalla home, a un tocco | Quando vuoi parlare |
+| Profilo | Dall'avatar in alto a destra | Raramente |
+
+**I sette momenti della giornata non compaiono più come lista.** Restano nel motore
+(`src/nowCard.js`): ogni momento ha una finestra oraria, e la home mostra il primo non fatto la cui
+finestra contiene l'ora attuale. Niente barra di avanzamento, niente "2 di 7", niente da spuntare —
+solo *"Più tardi: …"* come accenno a cosa viene dopo. Fuori da ogni finestra, Ora dice semplicemente
+che è lì.
 
 ## Avvio
 
@@ -93,12 +110,13 @@ Aggiunte per sostenere l'uso quotidiano, nello spirito del design (nessun punteg
 
 ```
 src/
-  data.js        copy, flusso, ruota delle emozioni, pattern di respiro, cue narrate, fallback chat
-  ai.js          system prompt + chiamata API Anthropic
+  data.js        copy, momenti, ruota delle emozioni, respiro, cue narrate, tip, fallback chat
+  nowCard.js     decide la sola cosa che conta adesso (finestre orarie + voce di Ora)
+  ai.js          system prompt, chat e report settimanale
   storage.js     persistenza localStorage e rollover del giorno
   App.jsx        stato, azioni, tick da 100ms (respiro/cue/countdown), routing e tab bar
-  screens/       le 11 schermate (Home/Flusso, Checkin, Pausa, Pratica, Session, Sera,
-                 Inneschi, Corpo, Legami, Coach, Profilo)
+  screens/       Oggi (home), Te, Pratica, Checkin, Pausa, Session, Sera, Coach, Profilo
+  sections/      le tre lenti di Te: CorpoSection, SchemiSection, LegamiSection
 public/          manifest, icone, service worker
 ```
 
