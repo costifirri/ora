@@ -79,6 +79,11 @@ export default function Profilo({ app }) {
             onChange={e => setP(prev => ({ settings: { ...prev.settings, apiKey: e.target.value.trim() } }))}
             aria-label="Chiave API Anthropic"
           />
+          <div style={{ fontSize: 12, marginTop: 8, color: p.settings.apiKey ? 'var(--sage-700)' : 'rgba(32,30,29,.5)' }}>
+            {p.settings.apiKey
+              ? '✓ Chiave presente su questo dispositivo: Ora risponde davvero.'
+              : 'Nessuna chiave su questo dispositivo. La chiave non si sincronizza: va incollata qui, su ogni dispositivo (l’app installata è separata anche da Safari).'}
+          </div>
         </div>
 
         <div className="card sand">
@@ -94,7 +99,7 @@ export default function Profilo({ app }) {
           </div>
         </div>
 
-        <div className="fineprint">Ora · v1.0 · i tuoi dati restano su questo dispositivo</div>
+        <div className="fineprint">Ora · v1.2 · i tuoi dati restano su questo dispositivo</div>
       </div>
     </div>
   )
