@@ -161,6 +161,65 @@ export const PAUSA_CHOICES = [
 
 export const INTENSITY_LABELS = ['Appena', 'Un po’', 'Abbastanza', 'Molto', 'Travolgente']
 
+// Suggerimenti di nutrimento: uno al giorno, scelto in base al contesto reale
+// (sonno, picchi, pasti già segnati, ora) e ruotato per giorno.
+// Tono dell'app: concreto, mai colpevolizzante, niente conteggi.
+export const NUTRITION_TIPS = {
+  notte: [
+    { text: 'Oggi mangia a orari regolari, anche senza fame.', why: 'Dopo una notte corta la fame si sfasa: pasti regolari tengono l’umore più stabile di quanto faccia la fame quando comanda lei.' },
+    { text: 'Vacci piano col caffè dopo le due.', why: 'Dopo una notte storta si tende a raddoppiare, e stanotte si paga di nuovo. Un bicchiere d’acqua fa più di quanto sembri.' },
+    { text: 'Metti qualcosa di sostanzioso a colazione.', why: 'Con poco sonno il corpo chiede zuccheri veloci tutto il giorno. Proteine al mattino spengono quella richiesta.' },
+  ],
+  picco: [
+    { text: 'Un pasto vero, prima di decidere qualsiasi cosa.', why: 'La fame amplifica la reattività: le stesse cose, a stomaco pieno, pesano meno.' },
+    { text: 'Se oggi hai saltato un pasto, recuperalo adesso.', why: 'Nei giorni con un picco forte, spesso poco prima c’è un pasto saltato.' },
+  ],
+  colazione: [
+    { text: 'Metti qualcosa di proteico nella colazione.', why: 'Proteine al mattino tengono la glicemia più piatta: meno fame nervosa verso le undici.' },
+    { text: 'Se puoi, mangia qualcosa prima del caffè.', why: 'Il caffè a stomaco vuoto alza il cortisolo su una base già alta. Anche due cucchiai di yogurt cambiano la mattina.' },
+    { text: 'Non serve che sia una colazione vera.', why: 'Un frutto e quattro noci contano. È saltare del tutto che si sente nel pomeriggio.' },
+  ],
+  pranzo: [
+    { text: 'Metti una cosa verde nel piatto.', why: 'Non per virtù: le verdure rallentano l’assorbimento e il pomeriggio resta più stabile.' },
+    { text: 'Aggiungi una fonte di proteine al pranzo.', why: 'È la differenza tra un pomeriggio lucido e uno che chiede zuccheri alle quattro.' },
+    { text: 'Mangia seduta e senza schermo, dieci minuti.', why: 'Il corpo digerisce meglio quando non è in allerta. Dieci minuti bastano.' },
+  ],
+  cena: [
+    { text: 'Cena un po’ prima, se la giornata lo permette.', why: 'Un po’ di distanza tra cena e letto è la cosa che il sonno gradisce di più.' },
+    { text: 'Cena calda e semplice.', why: 'Alla sera il corpo chiede di rallentare, non di mettersi a lavorare.' },
+    { text: 'Se cerchi dolce dopo cena, guarda cos’hai mangiato a pranzo.', why: 'Spesso non è golosità: è un pranzo troppo leggero che presenta il conto.' },
+  ],
+  acqua: [
+    { text: 'Un bicchiere d’acqua, adesso.', why: 'La disidratazione leggera si sente come stanchezza e irritabilità. Verificarlo costa dieci secondi.' },
+  ],
+  sempre: [
+    { text: 'Tieni qualcosa di pronto in borsa.', why: 'Noci, un frutto: la fame che ti trova fuori casa è quella che decide al posto tuo.' },
+    { text: 'Non serve mangiare bene tutti i giorni.', why: 'Serve mangiare abbastanza, quasi tutti i giorni. È una soglia molto più bassa e molto più utile.' },
+    { text: 'Nota come stai un’ora dopo il pasto, non durante.', why: 'È lì che si vede se un piatto ti ha sostenuta o solo riempita.' },
+    { text: 'Se mangi di corsa, almeno i primi bocconi piano.', why: 'I primi minuti dicono al corpo che è al sicuro. Il resto viene dietro.' },
+    { text: 'Una cosa che ti piace davvero, in uno dei pasti.', why: 'Il piacere fa parte del nutrimento: le regole senza piacere durano due settimane.' },
+  ],
+}
+
+// Indice del giorno: stabile entro la giornata, ruota il giorno dopo.
+function dayIndex(now = new Date()) {
+  return Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000)
+}
+
+// ctx: { hour, sleep, spikeToday, water, meals }
+export function dailyTip(ctx, now = new Date()) {
+  const { hour, sleep, spikeToday, water, meals } = ctx
+  let bucket = 'sempre'
+  if (sleep != null && sleep <= 5) bucket = 'notte'
+  else if (spikeToday) bucket = 'picco'
+  else if (hour < 11 && !meals.colazione) bucket = 'colazione'
+  else if (hour >= 11 && hour < 16 && !meals.pranzo) bucket = 'pranzo'
+  else if (hour >= 18 && !meals.cena) bucket = 'cena'
+  else if (water <= 2 && hour >= 12) bucket = 'acqua'
+  const list = NUTRITION_TIPS[bucket]
+  return { ...list[dayIndex(now) % list.length], bucket }
+}
+
 // Motore del respiro: scala 0.62–1.0 con easing coseno, ferma durante le trattenute.
 export function breath(t, patternKey) {
   const phases = (PATTERNS[patternKey] || PATTERNS['Calm six']).phases

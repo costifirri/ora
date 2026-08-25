@@ -84,6 +84,10 @@ Aggiunte per sostenere l'uso quotidiano, nello spirito del design (nessun punteg
   entra nel contesto dell'AI.
 - **Report settimanale AI** — due paragrafi scritti da Ora sui dati veri (senza le note della sera).
   Senza chiave API, un riepilogo locale calcolato.
+- **Suggerimento di nutrimento del giorno** — scelto dal contesto reale (sonno breve, picco di oggi,
+  pasto non ancora segnato all'ora giusta, acqua bassa), poi ruotato per giorno. Nessuna chiamata AI:
+  è istantaneo e funziona offline. I testi vivono in `NUTRITION_TIPS` (`src/data.js`), la selezione
+  in `dailyTip()`.
 
 ## Struttura
 

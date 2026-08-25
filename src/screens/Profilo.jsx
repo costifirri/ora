@@ -164,7 +164,7 @@ export default function Profilo({ app }) {
           </div>
         </div>
 
-        <div className="fineprint">Ora · v2.0 · i tuoi dati restano su questo dispositivo</div>
+        <div className="fineprint">Ora · v2.1 · i tuoi dati restano su questo dispositivo</div>
       </div>
     </div>
   )

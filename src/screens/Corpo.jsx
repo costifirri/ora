@@ -1,5 +1,5 @@
 import { Check } from 'lucide-react'
-import { HARD } from '../data.js'
+import { HARD, dailyTip } from '../data.js'
 import { todayKey } from '../storage.js'
 
 const MEALS = [
@@ -27,9 +27,16 @@ function movementInsight(p) {
 }
 
 export default function Corpo({ app }) {
-  const { p, day, patchDay } = app
+  const { p, day, patchDay, todayCheckins } = app
   const insight = movementInsight(p)
   const daysTracked = Object.keys(p.days).length
+  const tip = dailyTip({
+    hour: new Date().getHours(),
+    sleep: day.sleep,
+    spikeToday: todayCheckins.some(c => c.intensity >= 4 && HARD.includes(c.core)),
+    water: day.water,
+    meals: day.meals,
+  })
 
   return (
     <div className="screen">
@@ -141,6 +148,17 @@ export default function Corpo({ app }) {
 
         <div className="card sand">
           <div className="h-card" style={{ marginBottom: 12 }}>Nutrimento</div>
+
+          <div style={{ background: 'var(--sage-050)', border: '1px solid rgba(122,138,94,.35)', borderRadius: 24, padding: '16px 18px', marginBottom: 16 }}>
+            <div className="kicker" style={{ color: 'rgba(86,99,63,.85)', marginBottom: 8 }}>Oggi</div>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 17, lineHeight: 1.3, color: 'var(--forest)' }}>
+              {tip.text}
+            </div>
+            <div style={{ fontSize: 13, color: 'rgba(61,71,43,.85)', lineHeight: 1.5, marginTop: 8 }}>
+              {tip.why}
+            </div>
+          </div>
+
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             {MEALS.map(m => {
               const on = day.meals[m.k]
