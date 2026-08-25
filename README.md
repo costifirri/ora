@@ -46,11 +46,18 @@ Manifest, icone e service worker sono già configurati; dopo la prima visita fun
 ## La compagna AI
 
 Senza configurazione, Ora risponde con frasi preparate (fallback a parole chiave, come nel
-prototipo). Per le risposte vere: **Tu → Compagna AI** e incolla una chiave API Anthropic
-(`sk-ant-…`). La chiave resta nel localStorage del dispositivo e le chiamate vanno dirette
-all'API Anthropic (modello `claude-sonnet-5`, max 500 token; risposte sotto i 25 caratteri
-vengono scartate in favore del fallback). Il system prompt e il blocco di contesto utente sono
-portati verbatim dal prototipo (`src/ai.js`).
+prototipo). Per le risposte vere: **profilo (avatar) → La voce di Ora** e incolla una chiave API
+Anthropic (`sk-ant-…`). Il system prompt e il blocco di contesto utente sono portati verbatim dal
+prototipo (`src/ai.js`); le risposte sotto i 25 caratteri vengono scartate in favore del fallback.
+
+**Il modello predefinito è `claude-haiku-4-5`** ($1/$5 per milione di token). Ora scrive due frasi
+calde e un report di due paragrafi: non serve un modello da ragionamento, e la differenza di costo
+è circa 10× rispetto a Opus. Dal profilo si può passare a Sonnet o Opus.
+
+Attenzione a una differenza d'API tra i modelli, gestita da `tuning()` in `src/ai.js`: **Haiku 4.5
+non accetta `output_config.effort`** (restituisce 400) e non ragiona se non glielo si chiede,
+mentre sui modelli 5 il ragionamento è attivo di default e si paga come output — lì si passa
+`effort: 'low'`.
 
 ## Persistenza (localStorage, chiave `ora-state-v1`)
 

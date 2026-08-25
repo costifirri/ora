@@ -258,7 +258,7 @@ export default function App() {
       replyT.current = setTimeout(() => finish(fallback), 1400)
       return
     }
-    askOra({ apiKey: p.settings.apiKey, system: buildSystem(contextBlock(), name), history })
+    askOra({ apiKey: p.settings.apiKey, settings: p.settings, system: buildSystem(contextBlock(), name), history })
       .then(answer => finish(answer || fallback))
       .catch(err => finish(fallback, err.message === 'Failed to fetch' ? 'connessione assente' : err.message))
   }
@@ -276,7 +276,7 @@ export default function App() {
       return
     }
     setS({ reportLoading: true })
-    weeklyReport({ apiKey: p.settings.apiKey, contextBlock: contextBlock(), name })
+    weeklyReport({ apiKey: p.settings.apiKey, settings: p.settings, contextBlock: contextBlock(), name })
       .then(text => {
         setS({ reportLoading: false })
         if (text) setP({ weeklyReport: { text, ts: Date.now() } })
@@ -293,7 +293,7 @@ export default function App() {
     if (!person.name.trim()) { flash('Dai prima un nome a questa persona.'); return }
     if (!liveAI) { flash('Per questo serve la chiave API, nel tuo profilo.'); return }
     setS({ openerLoading: person.id })
-    askOpener({ apiKey: p.settings.apiKey, person, userName: name })
+    askOpener({ apiKey: p.settings.apiKey, settings: p.settings, person, userName: name })
       .then(text => {
         setS({ openerLoading: null })
         if (text) {

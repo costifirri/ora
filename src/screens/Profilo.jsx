@@ -3,6 +3,7 @@ import { ArrowLeft } from 'lucide-react'
 import { TONES } from '../data.js'
 import { deleteAccount } from '../cloud.js'
 import { authError } from '../firebase.js'
+import { MODELS, DEFAULT_MODEL } from '../ai.js'
 
 const INTENTS = [
   { label: 'Imparare a meditare', tone: 'sage' },
@@ -95,6 +96,31 @@ export default function Profilo({ app }) {
               ? '✓ Chiave presente su questo dispositivo: Ora risponde davvero.'
               : 'Nessuna chiave su questo dispositivo. La chiave non si sincronizza: va incollata qui, su ogni dispositivo (l’app installata è separata anche da Safari).'}
           </div>
+
+          {p.settings.apiKey && (
+            <div style={{ marginTop: 18, borderTop: '1px solid rgba(32,30,29,.12)', paddingTop: 16 }}>
+              <div style={{ fontSize: 12, color: 'rgba(32,30,29,.5)', fontWeight: 600, marginBottom: 10 }}>
+                Quanto spendere per ogni risposta
+              </div>
+              <div className="lens-row" style={{ background: 'rgba(32,30,29,.06)' }}>
+                {MODELS.map(m => {
+                  const on = (p.settings.model || DEFAULT_MODEL) === m.id
+                  return (
+                    <button
+                      key={m.id}
+                      className={`lens-btn${on ? ' on' : ''}`}
+                      onClick={() => setP(prev => ({ settings: { ...prev.settings, model: m.id } }))}
+                    >
+                      {m.label}
+                    </button>
+                  )
+                })}
+              </div>
+              <div style={{ fontSize: 12.5, color: 'rgba(32,30,29,.6)', lineHeight: 1.5, marginTop: 10 }}>
+                {MODELS.find(m => m.id === (p.settings.model || DEFAULT_MODEL))?.note}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="card surface">
@@ -162,7 +188,7 @@ export default function Profilo({ app }) {
           )}
         </div>
 
-        <div className="fineprint">Ora · v4.0.1</div>
+        <div className="fineprint">Ora · v4.1</div>
       </div>
     </div>
   )

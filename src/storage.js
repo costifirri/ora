@@ -2,6 +2,7 @@
 // per giorno, percorso, chat e impostazioni. Tutto resta sul dispositivo.
 
 import { DEFAULT_PEOPLE } from './data.js'
+import { DEFAULT_MODEL } from './ai.js'
 
 const KEY = 'ora-state-v1'
 // La chiave API vive in un cassetto suo, sempre e solo su questo dispositivo:
@@ -36,7 +37,7 @@ export const DEFAULT_PERSISTED = {
   qIdx: 0,
   seraQIdx: 0,
   messages: [{ from: 'ora', text: 'Ciao, sono Ora. Conosco la tua giornata, non i tuoi contatti. Come va, adesso?' }],
-  settings: { reminders: true, sync: true, gentle: true, share: false, apiKey: '', name: 'Costanza', pattern: 'Calm six' },
+  settings: { gentle: true, apiKey: '', model: DEFAULT_MODEL, name: 'Costanza', pattern: 'Calm six' },
 }
 
 export function loadPersisted() {
