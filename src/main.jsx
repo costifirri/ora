@@ -9,8 +9,25 @@ createRoot(document.getElementById('root')).render(
   </StrictMode>,
 )
 
+// L'app si aggiorna da sola: quando arriva una versione nuova, il service
+// worker prende il controllo e la pagina si ricarica una volta sola. Senza
+// questo, l'app installata resterebbe ferma alla versione del giorno prima.
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  let ricaricata = false
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (ricaricata) return
+    ricaricata = true
+    window.location.reload()
+  })
+
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register(import.meta.env.BASE_URL + 'sw.js').catch(() => {})
+    navigator.serviceWorker.register(import.meta.env.BASE_URL + 'sw.js')
+      .then(reg => {
+        // Ricontrolla ogni volta che riapri l'app dopo averla lasciata.
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') reg.update().catch(() => {})
+        })
+      })
+      .catch(() => {})
   })
 }
