@@ -113,6 +113,21 @@ export const QUESTIONS = [
   'Che cosa hai cambiato idea su, di recente?',
 ]
 
+// Le emozioni che vale la pena capire quando ci sono, non solo quando mancano.
+export const POSITIVE = ['Calma', 'Serena', 'Gioiosa', 'Carica']
+
+// Tag del check-in quando stai bene: "cosa te l'ha data?"
+export const GOOD_TAGS = [
+  { key: 'riposo', label: 'Riposo', note: 'Una notte piena, o una pausa vera nel mezzo.' },
+  { key: 'movimento', label: 'Movimento', note: 'Il corpo si è mosso prima che la testa si calmasse.' },
+  { key: 'persone', label: 'Persone', note: 'Uno scambio con qualcuno che ti ha rimessa in asse.' },
+  { key: 'fuori', label: 'Stare fuori', note: 'Luce e aria: il posto conta più di quanto sembri.' },
+  { key: 'fatto', label: 'Qualcosa di fatto', note: 'Una cosa portata a termine, anche piccola.' },
+  { key: 'sola', label: 'Tempo per te', note: 'Silenzio, o semplicemente nessuno intorno a chiedere.' },
+  { key: 'piacere', label: 'Un piacere', note: 'Musica, cibo, un libro: qualcosa di bello e basta.' },
+  { key: 'altro', label: 'Niente di preciso', note: 'È arrivata senza un motivo chiaro. Succede, ed è un dato anche questo.' },
+]
+
 // Tag facoltativi del check-in: "cosa è successo poco prima?"
 export const TRIGGER_TAGS = [
   { key: 'lavoro', label: 'Lavoro', note: 'Messaggi, scadenze o riunioni poco prima del picco.' },
@@ -131,7 +146,8 @@ export const SEED_TRIGGERS = [
   { label: 'Sentirti non ascoltata', n: 2, of: 8, note: 'Due volte su tre è con persone a cui non hai detto la cosa vera prima.' },
 ]
 
-export const HELPERS = [
+// Esempi, mostrati finché i tuoi check-in buoni non bastano a calcolarli.
+export const SEED_HELPERS = [
   { label: 'Camminare dieci minuti', note: 'Chiude l’onda più in fretta di qualsiasi altra cosa che hai provato.' },
   { label: 'L’espiro lungo', note: 'Tre respiri bastano per far scendere la reattività di un gradino.' },
   { label: 'Dirlo in una frase', note: 'Quando nomini l’emozione a voce, il picco dura circa metà.' },

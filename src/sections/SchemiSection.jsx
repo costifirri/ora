@@ -1,10 +1,11 @@
-import { HELPERS } from '../data.js'
+
 
 const LEVEL_COLORS = ['#e1eecc', '#ffe1d0', '#f6a06b', '#c67139']
+const volte = (n, of) => `${n} volt${n === 1 ? 'a' : 'e'} su ${of}`
 const fmtDay = ts => new Date(ts).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })
 
 export default function SchemiSection({ app }) {
-  const { setS, weekStrip, triggers, p, weekResponses, logged } = app
+  const { setS, weekStrip, triggers, restorers, p, weekResponses, logged } = app
   const recentNotes = p.seraNotes.slice(-7).reverse()
 
   return (
@@ -50,7 +51,7 @@ export default function SchemiSection({ app }) {
             <div key={t.label}>
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, fontSize: 14, marginBottom: 6 }}>
                 <span style={{ fontWeight: 600 }}>{t.label}</span>
-                <span style={{ color: 'var(--muted)', whiteSpace: 'nowrap' }}>{t.n} volte su {t.of}</span>
+                <span style={{ color: 'var(--muted)', whiteSpace: 'nowrap' }}>{volte(t.n, t.of)}</span>
               </div>
               <div className="trigger-track">
                 <div className="trigger-fill" style={{ width: `${Math.round(100 * t.n / t.of)}%` }} />
@@ -72,15 +73,35 @@ export default function SchemiSection({ app }) {
       </div>
 
       <div className="card sage">
-        <div className="h-card" style={{ marginBottom: 14, color: 'var(--forest)' }}>Cosa ti riporta giù di giri</div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {HELPERS.map(h => (
-            <div key={h.label} style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
-              <span style={{ width: 8, height: 8, flex: 'none', borderRadius: 999, background: 'var(--sage-500)', transform: 'translateY(-2px)' }} />
-              <span style={{ flex: 1, minWidth: 0 }}>
-                <span style={{ display: 'block', fontSize: 14.5, fontWeight: 600, color: 'var(--forest)' }}>{h.label}</span>
-                <span style={{ display: 'block', fontSize: 12.5, color: 'rgba(61,71,43,.85)', lineHeight: 1.45 }}>{h.note}</span>
-              </span>
+        <div className="h-card" style={{ marginBottom: 4, color: 'var(--forest)' }}>Cosa ti rimette insieme</div>
+        <div style={{ fontSize: 13, color: 'rgba(61,71,43,.8)', lineHeight: 1.5, marginBottom: 14 }}>
+          {restorers.example
+            ? 'Un esempio, per ora. Quando registri una giornata buona, il tocco su “cosa te l’ha data” rende anche questa lista tua.'
+            : 'Dai tuoi check-in buoni: non quello che dovrebbe farti bene, quello che te lo ha fatto davvero.'}
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: restorers.example ? 10 : 16 }}>
+          {restorers.list.map(t => (
+            <div key={t.label}>
+              {restorers.example ? (
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
+                  <span style={{ width: 8, height: 8, flex: 'none', borderRadius: 999, background: 'var(--sage-500)', transform: 'translateY(-2px)' }} />
+                  <span style={{ flex: 1, minWidth: 0 }}>
+                    <span style={{ display: 'block', fontSize: 14.5, fontWeight: 600, color: 'var(--forest)' }}>{t.label}</span>
+                    <span style={{ display: 'block', fontSize: 12.5, color: 'rgba(61,71,43,.85)', lineHeight: 1.45 }}>{t.note}</span>
+                  </span>
+                </div>
+              ) : (
+                <>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, fontSize: 14, marginBottom: 6, color: 'var(--forest)' }}>
+                    <span style={{ fontWeight: 600 }}>{t.label}</span>
+                    <span style={{ color: 'rgba(61,71,43,.7)', whiteSpace: 'nowrap' }}>{volte(t.n, t.of)}</span>
+                  </div>
+                  <div className="trigger-track" style={{ background: 'rgba(61,71,43,.12)' }}>
+                    <div className="trigger-fill" style={{ width: `${Math.round(100 * t.n / t.of)}%`, background: 'var(--sage-500)' }} />
+                  </div>
+                  <div style={{ fontSize: 12.5, color: 'rgba(61,71,43,.8)', lineHeight: 1.45 }}>{t.note}</div>
+                </>
+              )}
             </div>
           ))}
         </div>

@@ -119,9 +119,15 @@ nemmeno.
 
 Aggiunte per sostenere l'uso quotidiano, nello spirito del design (nessun punteggio, nessuna serie):
 
-- **Innesco nel check-in** — una domanda facoltativa "cosa è successo poco prima?" con sei tag.
-  Da tre check-in intensi taggati in poi, *Conoscerti* calcola gli inneschi da questi invece che
+- **Innesco nel check-in** — una domanda facoltativa che si ribalta con l'emozione: quando stai male
+  *"cosa è successo poco prima?"* (`TRIGGER_TAGS`), quando stai bene *"cosa te l'ha data?"*
+  (`GOOD_TAGS`). Da tre check-in taggati in poi, gli inneschi si calcolano da questi invece che
   dalle fasce orarie.
+- **Cosa ti rimette insieme** — il conto speculare agli inneschi, sui check-in buoni
+  (`POSITIVE`, nessuna soglia d'intensità: una calma lieve vale quanto una piena). Prima questa
+  scheda era testo fisso del design (`SEED_HELPERS`) che finiva nel contesto AI etichettato
+  "per esperienza": non era la sua esperienza. Ora o è calcolato e lo dice, o è dichiarato esempio
+  e il contesto avverte il modello di *non darlo per noto*.
 - **Risposte contate** — la scelta finale del Momento difficile viene salvata: *Conoscerti* mostra
   quante volte hai risposto invece di reagire.
 - **Rilettura delle note della sera** — le ultime sette, con la data, in *Conoscerti*.

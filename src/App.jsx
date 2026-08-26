@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { FLOW, COURSE, CUES, HARD, CORE, HELPERS, SEED_TRIGGERS, SEED_WEEK, TRIGGER_TAGS, breath, answerFor, localDaily } from './data.js'
+import { FLOW, COURSE, CUES, HARD, CORE, POSITIVE, GOOD_TAGS, SEED_HELPERS, SEED_TRIGGERS, SEED_WEEK, TRIGGER_TAGS, breath, answerFor, localDaily } from './data.js'
 import { buildSystem, askOra, weeklyReport, askOpener, extractMemories, monthChapter, dailyLine } from './ai.js'
 import { loadPersisted, savePersisted, adoptCloud, todayKey, emptyDay, exportAll, freshStart } from './storage.js'
 import { isConfigured } from './firebase.js'
@@ -186,6 +186,19 @@ export default function App() {
     return { list, example: false }
   })()
 
+  // Cosa ti rimette insieme: lo stesso conto degli inneschi, dall'altra parte.
+  // Qui non serve una soglia d'intensità: una calma lieve vale quanto una piena.
+  const goodCheckins = p.checkins.filter(c => POSITIVE.includes(c.core))
+  const restorers = (() => {
+    const tagged = goodCheckins.filter(c => c.tag).slice(-10)
+    if (tagged.length < 3) return { list: SEED_HELPERS, example: true }
+    const list = GOOD_TAGS
+      .map(t => ({ label: t.label, n: tagged.filter(c => c.tag === t.key).length, of: tagged.length, note: t.note }))
+      .filter(t => t.n > 0)
+      .sort((a, b) => b.n - a.n)
+    return { list, example: false }
+  })()
+
   // Risposte scelte nel Momento difficile negli ultimi 7 giorni
   const weekAgo = Date.now() - 7 * 24 * 3600 * 1000
   const weekResponses = p.pauseLog.filter(x => x.ts >= weekAgo)
@@ -270,7 +283,10 @@ export default function App() {
       `- volte in cui ha scelto una risposta invece di reagire: ${weekResponses.length}` + (weekResponses.length ? ` (${weekResponses.map(x => x.choice).join('; ')})` : ''),
       '- inneschi ricorrenti: ' + triggers.list.map(t => `${t.label} (${t.n}/${t.of})`).join(', '),
       p.intention ? `- la regola che si e' data: ${p.intention}` : null,
-      '- cosa la calma, per esperienza: ' + HELPERS.map(h => h.label).join(', '),
+      restorers.example
+        ? '- cosa la rimette insieme: non ancora osservato (troppi pochi check-in buoni con un tag); non darlo per noto'
+        : '- cosa la rimette insieme, dai suoi dati: ' + restorers.list.map(t => `${t.label} (${t.n}/${t.of})`).join(', '),
+      `- check-in buoni negli ultimi 7 giorni: ${goodCheckins.filter(c => c.ts >= weekAgo).length}`,
     ].filter(x => x !== null).join('\n')
   }
 
@@ -462,13 +478,14 @@ export default function App() {
     const wc = p.checkins.filter(c => c.ts >= weekAgo)
     const intense = wc.filter(c => c.intensity >= 4 && HARD.includes(c.core)).length
     const n = (x, one, many) => `${x} ${x === 1 ? one : many}`
-    return `${n(wc.length, 'check-in', 'check-in')} questa settimana, ${n(intense, 'picco forte', 'picchi forti')}, ${n(weekResponses.length, 'risposta scelta', 'risposte scelte')} invece di reagire.`
+    const buoni = wc.filter(c => POSITIVE.includes(c.core)).length
+    return `${n(wc.length, 'check-in', 'check-in')} questa settimana: ${n(buoni, 'volta stavi bene', 'volte stavi bene')}, ${n(intense, 'picco forte', 'picchi forti')}, ${n(weekResponses.length, 'risposta scelta', 'risposte scelte')} invece di reagire.`
   }
 
   const app = {
     p, s, setS, setP, day, patchDay, markDone, gentle, name, pattern,
     flash, orderedFlow, logged, todayCheckins, weekStrip, triggers, spikes,
-    weekResponses, logPauseChoice, generateReport, localWeekSummary, makeOpener,
+    weekResponses, restorers, goodCheckins, logPauseChoice, generateReport, localWeekSummary, makeOpener,
     harvestMemories, pendingMonth, monthName, writeChapter, dailyKinds,
     writeNote, removeNote,
     resetAll: () => { setPRaw(freshStart(p.settings)); setS({ screen: 'oggi' }); flash('Ricominciamo da qui.') },

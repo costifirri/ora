@@ -1,9 +1,12 @@
 import { ArrowLeft } from 'lucide-react'
-import { CORE, TONES, HARD, INTENSITY_LABELS, TRIGGER_TAGS } from '../data.js'
+import { CORE, TONES, HARD, POSITIVE, INTENSITY_LABELS, TRIGGER_TAGS, GOOD_TAGS } from '../data.js'
 
 export default function Checkin({ app }) {
   const { s, setS, logMood } = app
   const core = s.core != null ? CORE[s.core] : null
+  // Quando stai bene la domanda si ribalta: non cosa l'ha rotta, cosa te l'ha data.
+  const buona = core && POSITIVE.includes(core.key)
+  const tags = buona ? GOOD_TAGS : TRIGGER_TAGS
 
   const words = core
     ? core.nuance.concat(['Altro ancora']).map(w => ({ label: w, tone: core.tone }))
@@ -77,10 +80,10 @@ export default function Checkin({ app }) {
             </div>
             <div>
               <div style={{ fontSize: 12, color: 'rgba(32,30,29,.6)', marginBottom: 8 }}>
-                Cosa è successo poco prima? <span style={{ opacity: .6 }}>(facoltativo)</span>
+                {buona ? 'Cosa te l’ha data?' : 'Cosa è successo poco prima?'} <span style={{ opacity: .6 }}>(facoltativo)</span>
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                {TRIGGER_TAGS.map(t => {
+                {tags.map(t => {
                   const on = s.checkinTag === t.key
                   return (
                     <button
