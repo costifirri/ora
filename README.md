@@ -62,7 +62,7 @@ mentre sui modelli 5 il ragionamento è attivo di default e si paga come output 
 ## Persistenza (localStorage, chiave `ora-state-v1`)
 
 - storico dei check-in (parola, sfumatura, intensità, innesco, timestamp)
-- note del rituale della sera
+- diario e note del rituale della sera (stesso archivio)
 - registro delle conversazioni
 - risposte scelte nel Momento difficile
 - intenzione della settimana e ultimo report generato
@@ -70,13 +70,18 @@ mentre sui modelli 5 il ragionamento è attivo di default e si paga come output 
 - avanzamento del percorso di meditazione
 - chat e impostazioni
 
-**Esporta i dati** in *Tu* scarica tutto come JSON.
+**Esporta i dati** nel profilo scarica tutto come JSON.
 
 ### Privacy
 
-Le tre righe del rituale della sera **non vengono mai inviate all'AI**: né in chat né nel report.
-L'app promette "nessuno le leggerà" e il blocco di contesto lo dichiara esplicitamente al modello.
-Sono rileggibili in *Te → Come stai*.
+Il diario e le tre righe della sera **vengono letti da Ora** (le ultime pagine nel contesto della
+chat, tutto il mese nel racconto mensile). È una scelta esplicita dell'utente, presa in v5.0: la
+copy in `Sera.jsx`, in `SchemiSection.jsx` e nel `contextBlock` è stata cambiata di conseguenza.
+Regola: **se cambia la promessa, cambia anche dove è scritta** — l'app non deve mai dire una cosa
+e farne un'altra.
+
+Tutto ciò che Ora ricorda è visibile e cancellabile in *Te → Cosa so di te*. Nessuna memoria
+invisibile o non correggibile: è la differenza tra una compagna e una sorveglianza.
 
 La **chiave API non lascia mai il dispositivo**: vive in un cassetto localStorage separato
 (`ora-apikey`) e viene esclusa da tutto ciò che si sincronizza (`withoutSecrets` in `src/cloud.js`).
@@ -122,8 +127,16 @@ Aggiunte per sostenere l'uso quotidiano, nello spirito del design (nessun punteg
 - **Rilettura delle note della sera** — le ultime sette, con la data, in *Conoscerti*.
 - **Regola della settimana** — un'intenzione "se X, allora Y" in *Tu*, con esempi da cui partire;
   entra nel contesto dell'AI.
-- **Report settimanale AI** — due paragrafi scritti da Ora sui dati veri (senza le note della sera).
+- **Report settimanale AI** — due paragrafi scritti da Ora sui dati veri.
   Senza chiave API, un riepilogo locale calcolato.
+- **Diario** (dalla home, "Scrivi nel diario") — scrittura libera, quando vuoi, piu' volte al giorno.
+  Condivide l'archivio con le tre righe del rituale della sera (`p.seraNotes`, campo `source`):
+  un solo mucchio di scritti, cosi' calendario, memoria e racconto dei mesi li leggono tutti
+  senza doppioni.
+- **Una cosa per oggi** — pensiero, curiosita' e oroscopo, a **selezione multipla**
+  (`settings.dailyKinds`). Con la chiave le scrive Ora conoscendoti, una chiamata per tipo;
+  senza chiave pensiero e curiosita' ruotano da un elenco locale e l'oroscopo semplicemente non
+  compare, invece di mostrare qualcosa che oroscopo non e'.
 - **Suggerimento di nutrimento del giorno** — scelto dal contesto reale (sonno breve, picco di oggi,
   pasto non ancora segnato all'ora giusta, acqua bassa), poi ruotato per giorno. Nessuna chiamata AI:
   è istantaneo e funziona offline. I testi vivono in `NUTRITION_TIPS` (`src/data.js`), la selezione

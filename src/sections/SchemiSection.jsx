@@ -97,10 +97,16 @@ export default function SchemiSection({ app }) {
 
       {recentNotes.length > 0 && (
         <div className="card surface">
-          <div className="h-card" style={{ marginBottom: 4 }}>Le tue tre righe</div>
+          <div className="h-card" style={{ marginBottom: 4 }}>Dal diario</div>
           <div style={{ fontSize: 13, color: 'rgba(32,30,29,.6)', lineHeight: 1.5, marginBottom: 10 }}>
-            Quello che ti ha mossa, riletto a distanza. Le ultime le legge anche Ora, per conoscerti meglio.
+            Le ultime pagine, rilette a distanza. Le più recenti le legge anche Ora, per conoscerti meglio.
           </div>
+          <button
+            className="btn-outline" style={{ width: '100%', minHeight: 46, marginBottom: 12 }}
+            onClick={() => setS({ screen: 'diario' })}
+          >
+            Apri il diario
+          </button>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {recentNotes.map((n, i) => (
               <div key={i} style={{ padding: '12px 0', borderTop: '1px solid rgba(32,30,29,.10)' }}>

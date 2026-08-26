@@ -18,7 +18,7 @@ export default function Sera({ app }) {
 
   const next = () => {
     if (s.seraStep < 2) { setS(prev => ({ seraStep: prev.seraStep + 1 })); return }
-    if (s.seraDraft.trim()) setP(prev => ({ seraNotes: [...prev.seraNotes, { text: s.seraDraft.trim(), ts: Date.now() }] }))
+    if (s.seraDraft.trim()) setP(prev => ({ seraNotes: [...prev.seraNotes, { text: s.seraDraft.trim(), ts: Date.now(), source: 'sera' }] }))
     markDone('sera')
     setS({ screen: 'oggi', seraDraft: '' })
     flash('Serata chiusa. Domani ti ritrovi la domanda in cima a Oggi.')

@@ -1,4 +1,4 @@
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, PenLine } from 'lucide-react'
 import { COURSE, MOVE_SLOTS } from '../data.js'
 import { nowCard } from '../nowCard.js'
 
@@ -100,14 +100,30 @@ export default function Oggi({ app }) {
           <ArrowRight size={18} strokeWidth={2.75} color="var(--sage-500)" />
         </button>
 
-        {p.daily?.text && (
-          <div className="daily-card">
+        <button className="talk-row" onClick={() => setS({ screen: 'diario' })}>
+          <span style={{
+            width: 38, height: 38, flex: 'none', borderRadius: 999, background: 'var(--sand)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <PenLine size={17} strokeWidth={2.75} color="var(--sage-700)" />
+          </span>
+          <span style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
+            <span style={{ display: 'block', fontSize: 15, fontWeight: 600 }}>Scrivi nel diario</span>
+            <span style={{ display: 'block', fontSize: 12, color: 'var(--muted)' }}>
+              {p.seraNotes.length ? 'Un pensiero del giorno, o rileggi le pagine' : 'Un pensiero del giorno, senza doverlo ordinare'}
+            </span>
+          </span>
+          <ArrowRight size={18} strokeWidth={2.75} color="var(--sage-500)" />
+        </button>
+
+        {(p.daily?.items || []).map(item => (
+          <div key={item.kind} className="daily-card">
             <div className="kicker" style={{ color: 'rgba(86,99,63,.8)', marginBottom: 8 }}>
-              {p.daily.kind === 'segno' ? (p.profile.segno || 'Il tuo segno') : p.daily.kind === 'fatto' ? 'Lo sapevi' : 'Un pensiero'}
+              {item.kind === 'segno' ? (p.profile.segno || 'Il tuo segno') : item.kind === 'fatto' ? 'Lo sapevi' : 'Un pensiero'}
             </div>
-            <div className="daily-text">{p.daily.text}</div>
+            <div className="daily-text">{item.text}</div>
           </div>
-        )}
+        ))}
 
         {card.later && (
           <div style={{ fontSize: 12.5, color: 'rgba(32,30,29,.42)', textAlign: 'center', padding: '4px 20px', lineHeight: 1.5 }}>

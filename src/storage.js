@@ -26,7 +26,7 @@ export const EMPTY_DONE = { checkin: false, meditate: false, move: false, connec
 
 export const DEFAULT_PERSISTED = {
   checkins: [],        // {word, core, intensity, tag?, ts}
-  seraNotes: [],       // {text, ts}
+  seraNotes: [],       // {text, ts, source:'diario'|'sera'} — diario e righe della sera, insieme
   convoLog: [],        // {who, tone, unsaid, ts}
   pauseLog: [],        // {choice, ts} — risposte scelte nel Momento difficile
   people: structuredClone(DEFAULT_PEOPLE), // {id, name, meta, opener} — modificabili
@@ -36,7 +36,7 @@ export const DEFAULT_PERSISTED = {
   memories: [],        // {id, text, ts, source:'chat'|'tu'} — cose durature che le hai detto
   chapters: [],        // {month:'2026-08', text, ts} — il racconto di un mese, scritto da Ora
   memoryUpTo: 0,       // fin dove ho gia' estratto ricordi dalla chat (indice messaggi)
-  daily: null,         // {date, forKind, kind, text} — la cosa di oggi
+  daily: null,         // {date, forKinds:[], items:[{kind,text}]} — le cose di oggi
 
   intention: '',       // intenzione settimanale "se X, allora Y"
   weeklyReport: null,  // {text, ts} — ultimo report generato
@@ -46,7 +46,7 @@ export const DEFAULT_PERSISTED = {
   qIdx: 0,
   seraQIdx: 0,
   messages: [{ from: 'ora', text: 'Ciao, sono Ora. Conosco la tua giornata, non i tuoi contatti. Come va, adesso?' }],
-  settings: { gentle: true, apiKey: '', model: DEFAULT_MODEL, dailyKind: 'pensiero', name: 'Costanza', pattern: 'Calm six' },
+  settings: { gentle: true, apiKey: '', model: DEFAULT_MODEL, dailyKinds: ['pensiero'], name: 'Costanza', pattern: 'Calm six' },
 }
 
 export function loadPersisted() {
@@ -76,6 +76,10 @@ export function loadPersisted() {
       settings: {
         ...DEFAULT_PERSISTED.settings,
         ...(data.settings || {}),
+        // Prima era una scelta sola: la porto nella lista senza perderla.
+        dailyKinds: Array.isArray(data.settings?.dailyKinds)
+          ? data.settings.dailyKinds
+          : (data.settings?.dailyKind ? [data.settings.dailyKind] : ['pensiero']),
         apiKey: readApiKey() || data.settings?.apiKey || '',
       },
     }
@@ -108,7 +112,14 @@ export function adoptCloud(cloud) {
     days,
     people: Array.isArray(cloud.people) ? cloud.people : structuredClone(DEFAULT_PEOPLE),
     profile: { ...DEFAULT_PERSISTED.profile, ...(cloud.profile || {}) },
-    settings: { ...DEFAULT_PERSISTED.settings, ...(cloud.settings || {}), apiKey: readApiKey() },
+    settings: {
+      ...DEFAULT_PERSISTED.settings,
+      ...(cloud.settings || {}),
+      dailyKinds: Array.isArray(cloud.settings?.dailyKinds)
+        ? cloud.settings.dailyKinds
+        : (cloud.settings?.dailyKind ? [cloud.settings.dailyKind] : ['pensiero']),
+      apiKey: readApiKey(),
+    },
   }
 }
 

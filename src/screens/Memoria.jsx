@@ -13,7 +13,7 @@ const CAMPI = [
 const fmt = ts => new Date(ts).toLocaleDateString('it-IT', { day: 'numeric', month: 'long' })
 
 export default function Memoria({ app }) {
-  const { p, s, setS, setP, name, pendingMonth, monthName, writeChapter, liveAI, dailyKind } = app
+  const { p, s, setS, setP, name, pendingMonth, monthName, writeChapter, liveAI, dailyKinds } = app
 
   const setField = (k, v) => setP(prev => ({ profile: { ...prev.profile, [k]: v } }))
   const forget = id => setP(prev => ({ memories: prev.memories.filter(m => m.id !== id) }))
@@ -65,22 +65,46 @@ export default function Memoria({ app }) {
           <div style={{ fontSize: 13, color: 'rgba(32,30,29,.6)', lineHeight: 1.5, marginBottom: 12 }}>
             Compare in home e cambia ogni giorno. Con la chiave la scrivo io, conoscendoti.
           </div>
-          <div className="lens-row" style={{ background: 'rgba(32,30,29,.06)' }}>
-            {DAILY_KINDS.map(k => (
-              <button
-                key={k.k}
-                className={`lens-btn${dailyKind === k.k ? ' on' : ''}`}
-                onClick={() => setP(prev => ({ settings: { ...prev.settings, dailyKind: k.k } }))}
-              >
-                {k.label}
-              </button>
-            ))}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {DAILY_KINDS.map(k => {
+              const on = dailyKinds.includes(k.k)
+              return (
+                <button
+                  key={k.k}
+                  role="switch" aria-checked={on}
+                  style={{
+                    display: 'flex', alignItems: 'flex-start', gap: 12, width: '100%', minHeight: 56,
+                    padding: '12px 14px', textAlign: 'left', cursor: 'pointer',
+                    border: `1px solid ${on ? 'rgba(122,138,94,.5)' : 'rgba(32,30,29,.14)'}`,
+                    borderRadius: 20, background: on ? 'var(--sage-050)' : 'transparent',
+                  }}
+                  onClick={() => setP(prev => {
+                    const cur = prev.settings.dailyKinds?.length ? prev.settings.dailyKinds : ['pensiero']
+                    const next = cur.includes(k.k) ? cur.filter(x => x !== k.k) : [...cur, k.k]
+                    return { settings: { ...prev.settings, dailyKinds: next } }
+                  })}
+                >
+                  <span style={{
+                    width: 22, height: 22, flex: 'none', marginTop: 1, borderRadius: 7,
+                    border: `2px solid ${on ? 'var(--sage-700)' : 'rgba(32,30,29,.28)'}`,
+                    background: on ? 'var(--sage-700)' : 'transparent', color: 'var(--surface)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700,
+                  }}>{on ? '✓' : ''}</span>
+                  <span style={{ flex: 1, minWidth: 0 }}>
+                    <span style={{ display: 'block', fontSize: 14.5, fontWeight: 600 }}>{k.label}</span>
+                    <span style={{ display: 'block', fontSize: 12.5, color: 'rgba(32,30,29,.6)', lineHeight: 1.45, marginTop: 2 }}>{k.note}</span>
+                  </span>
+                </button>
+              )
+            })}
           </div>
-          <div style={{ fontSize: 12.5, color: 'rgba(32,30,29,.6)', lineHeight: 1.5, marginTop: 10 }}>
-            {DAILY_KINDS.find(k => k.k === dailyKind)?.note}
-          </div>
+          {dailyKinds.length === 0 && (
+            <div style={{ fontSize: 12, color: 'rgba(32,30,29,.5)', marginTop: 10, lineHeight: 1.45 }}>
+              Nessuna: in home non comparirà niente. Va bene anche così.
+            </div>
+          )}
 
-          {dailyKind === 'segno' && (
+          {dailyKinds.includes('segno') && (
             <div style={{ marginTop: 14 }}>
               <div style={{ fontSize: 12, fontWeight: 600, color: 'rgba(32,30,29,.5)', marginBottom: 8 }}>Il tuo segno</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>

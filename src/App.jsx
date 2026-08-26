@@ -16,6 +16,7 @@ import Coach from './screens/Coach.jsx'
 import Profilo from './screens/Profilo.jsx'
 import Memoria from './screens/Memoria.jsx'
 import Calendario from './screens/Calendario.jsx'
+import Diario from './screens/Diario.jsx'
 
 const TABS = [
   { id: 'oggi', label: 'Ora' },
@@ -338,26 +339,38 @@ export default function App() {
   // --- Una cosa per oggi ----------------------------------------------------
   // Una sola volta al giorno. Se la chiamata fallisce resta il testo locale:
   // 'tried' impedisce di riprovare a ogni apertura.
-  const dailyKind = p.settings.dailyKind || 'pensiero'
+  const dailyKinds = p.settings.dailyKinds?.length ? p.settings.dailyKinds : ['pensiero']
+  const firma = dailyKinds.join(',')
   useEffect(() => {
-    // 'forKind' e' cosa hai chiesto, 'kind' cosa e' arrivato davvero: cosi' un
-    // tentativo fallito non si ripete a ogni apertura, ma cambiare preferenza
-    // rigenera subito.
-    if (p.daily && p.daily.date === tk && p.daily.forKind === dailyKind) return
-    // L'oroscopo senza chiave non si puo' scrivere: si ripiega su un pensiero,
-    // e l'etichetta lo dice invece di promettere una cosa e darne un'altra.
-    const localKind = dailyKind === 'segno' ? 'pensiero' : dailyKind
-    const local = { date: tk, forKind: dailyKind, kind: localKind, text: localDaily(localKind) }
-    setP({ daily: local })
+    // 'forKinds' registra cosa hai chiesto: cosi' un tentativo fallito non si
+    // ripete a ogni apertura, ma cambiare le preferenze rigenera subito.
+    if (p.daily && p.daily.date === tk && p.daily.forKinds?.join(',') === firma) return
+    // L'oroscopo senza chiave non si puo' scrivere: si mostra solo quello che
+    // c'e' davvero, invece di promettere una cosa e darne un'altra.
+    const locali = dailyKinds
+      .filter(k => k !== 'segno' || liveAI)
+      .map(k => ({ kind: k, text: liveAI && k === 'segno' ? '' : localDaily(k) }))
+      .filter(x => x.text)
+    setP({ daily: { date: tk, forKinds: dailyKinds, items: locali } })
     if (!liveAI) return
-    dailyLine({
-      apiKey: p.settings.apiKey, settings: p.settings, kind: dailyKind,
-      segno: p.profile.segno, contextBlock: contextBlock(), name,
+    dailyKinds.forEach(kind => {
+      dailyLine({
+        apiKey: p.settings.apiKey, settings: p.settings, kind,
+        segno: p.profile.segno, contextBlock: contextBlock(), name,
+      })
+        .then(text => {
+          if (!text) return
+          setP(prev => {
+            const altri = (prev.daily?.items || []).filter(x => x.kind !== kind)
+            const ordinati = [...altri, { kind, text }]
+              .sort((a, b) => dailyKinds.indexOf(a.kind) - dailyKinds.indexOf(b.kind))
+            return { daily: { date: tk, forKinds: dailyKinds, items: ordinati } }
+          })
+        })
+        .catch(() => {})
     })
-      .then(text => { if (text) setP({ daily: { date: tk, forKind: dailyKind, kind: dailyKind, text } }) })
-      .catch(() => {})
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tk, dailyKind, p.settings.apiKey])
+  }, [tk, firma, p.settings.apiKey])
 
   // --- Memoria -------------------------------------------------------------
 
@@ -436,6 +449,15 @@ export default function App() {
       .catch(err => { setS({ chapterLoading: false }); flash(`Non e’ arrivato (${err.message}).`) })
   }
 
+  // --- Diario ---------------------------------------------------------------
+  const writeNote = text => {
+    const t = text.trim()
+    if (!t) return
+    setP(prev => ({ seraNotes: [...prev.seraNotes, { text: t, ts: Date.now(), source: 'diario' }] }))
+    flash('Scritto. Resta qui, e Ora lo legge per conoscerti.')
+  }
+  const removeNote = ts => setP(prev => ({ seraNotes: prev.seraNotes.filter(n => n.ts !== ts) }))
+
   const localWeekSummary = () => {
     const wc = p.checkins.filter(c => c.ts >= weekAgo)
     const intense = wc.filter(c => c.intensity >= 4 && HARD.includes(c.core)).length
@@ -447,7 +469,8 @@ export default function App() {
     p, s, setS, setP, day, patchDay, markDone, gentle, name, pattern,
     flash, orderedFlow, logged, todayCheckins, weekStrip, triggers, spikes,
     weekResponses, logPauseChoice, generateReport, localWeekSummary, makeOpener,
-    harvestMemories, pendingMonth, monthName, writeChapter, dailyKind,
+    harvestMemories, pendingMonth, monthName, writeChapter, dailyKinds,
+    writeNote, removeNote,
     resetAll: () => { setPRaw(freshStart(p.settings)); setS({ screen: 'oggi' }); flash('Ricominciamo da qui.') },
     startSession, stopSession, kindForCourse, logMood, sendText, liveAI,
     breath: t => breath(t, pattern),
@@ -476,6 +499,7 @@ export default function App() {
       {s.screen === 'profile' && <Profilo app={app} />}
       {s.screen === 'memoria' && <Memoria app={app} />}
       {s.screen === 'calendario' && <Calendario app={app} />}
+      {s.screen === 'diario' && <Diario app={app} />}
 
       {s.toast && <div className="toast" role="status">{s.toast}</div>}
 
