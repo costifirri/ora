@@ -207,7 +207,7 @@ export default function Memoria({ app }) {
         </div>
 
         <div className="fineprint" style={{ lineHeight: 1.5, padding: '0 8px' }}>
-          {name}, quello che leggi qui è tutto quello che so.
+          {name ? `${name}, quello` : 'Quello'} che leggi qui è tutto quello che so.
           Le tue righe della sera le leggo anch’io, per capirti meglio: le trovi in Te.
         </div>
       </div>

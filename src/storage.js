@@ -47,7 +47,7 @@ export const DEFAULT_PERSISTED = {
   qIdx: 0,
   seraQIdx: 0,
   messages: [{ from: 'ora', text: 'Ciao, sono Ora. Conosco la tua giornata, non i tuoi contatti. Come va, adesso?' }],
-  settings: { gentle: true, apiKey: '', model: DEFAULT_MODEL, dailyKinds: ['pensiero'], name: 'Costanza', pattern: 'Calm six' },
+  settings: { gentle: true, apiKey: '', model: DEFAULT_MODEL, dailyKinds: ['pensiero'], name: '', pattern: 'Calm six' },
 }
 
 export function loadPersisted() {
@@ -133,6 +133,10 @@ export function emptyDay() {
 
 // Ricomincia da zero: sparisce tutto quello che hai registrato, restano
 // la chiave, il modello scelto e il tuo nome.
+// La chiave e' della persona, non del dispositivo: uscendo se ne va con lei,
+// cosi' su un telefono condiviso nessuno spende il credito di un altro.
+export function clearApiKey() { writeApiKey('') }
+
 export function freshStart(settings) {
   return { ...structuredClone(DEFAULT_PERSISTED), settings: { ...settings } }
 }

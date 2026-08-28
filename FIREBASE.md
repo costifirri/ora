@@ -64,6 +64,16 @@ La chiave resta fuori di proposito: è una credenziale che comporta addebiti, e 
 compromesso significherebbe chiavi rubate. Ognuno la inserisce una volta per telefono
 (`src/cloud.js` → `withoutSecrets`, `src/storage.js` → cassetto `ora-apikey`).
 
+## Cosa vede chi si iscrive
+
+Chi apre l'app trova la schermata d'accesso. Creando uno spazio le viene chiesto **il suo nome**
+(niente e' precompilato con il tuo), parte con una lista di persone generica per ruolo — compagno,
+famiglia, lavoro, un'amicizia — da rinominare come vuole, e trova il campo per **la sua chiave API**
+nel profilo, con le istruzioni per generarla.
+
+La chiave resta sul dispositivo di ciascuna e **viene cancellata all'uscita**: su un telefono
+prestato, nessuno spende il credito di un altro.
+
 ## Al primo accesso
 
 Se apri l'app su un dispositivo dove avevi già dei dati locali e crei il tuo spazio, quei dati

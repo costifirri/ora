@@ -20,10 +20,10 @@ export default function Oggi({ app }) {
     <div className="screen">
       <header className="home-head">
         <div style={{ minWidth: 0 }}>
-          <h1 className="h-page" style={{ margin: 0 }}>{card.greeting}, {name}</h1>
+          <h1 className="h-page" style={{ margin: 0 }}>{card.greeting}{name ? `, ${name}` : ''}</h1>
           {card.opener && <div className="meta" style={{ marginTop: 6, lineHeight: 1.45 }}>{card.opener}</div>}
         </div>
-        <button className="avatar-btn" onClick={() => setS({ screen: 'profile' })} aria-label="Il tuo profilo">{name[0]}</button>
+        <button className="avatar-btn" onClick={() => setS({ screen: 'profile' })} aria-label="Il tuo profilo">{name ? name[0] : 'O'}</button>
       </header>
 
       <div className="stack">

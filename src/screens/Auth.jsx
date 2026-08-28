@@ -2,8 +2,9 @@ import { useState } from 'react'
 import { authError } from '../firebase.js'
 import { signIn, signUp, resetPassword } from '../cloud.js'
 
-export default function Auth() {
+export default function Auth({ onName }) {
   const [mode, setMode] = useState('in') // 'in' | 'up' | 'reset'
+  const [nome, setNome] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
@@ -19,6 +20,9 @@ export default function Auth() {
         setNote('Ti ho mandato un’email per rifare la password.')
         setMode('in')
       } else if (mode === 'up') {
+        // Il nome prima della registrazione: cosi' e' gia' nei dati quando
+        // vengono spinti nel tuo spazio appena creato.
+        onName(nome.trim())
         await signUp(email, password)
       } else {
         await signIn(email, password)
@@ -52,6 +56,13 @@ export default function Auth() {
       </div>
 
       <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {mode === 'up' && (
+          <input
+            className="apikey-input" type="text" autoComplete="given-name"
+            value={nome} onChange={e => setNome(e.target.value)}
+            placeholder="Come ti chiami" aria-label="Il tuo nome" required maxLength={30}
+          />
+        )}
         <input
           className="apikey-input" type="email" inputMode="email" autoComplete="email"
           value={email} onChange={e => setEmail(e.target.value)}

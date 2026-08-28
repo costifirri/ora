@@ -30,10 +30,17 @@ export default function Profilo({ app }) {
 
       <div style={{ padding: '4px 0 18px', display: 'flex', alignItems: 'center', gap: 14 }}>
         <span style={{ width: 64, height: 64, borderRadius: 999, background: 'var(--sage-100)', color: 'var(--sage-700)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-display)', fontSize: 24, flex: 'none' }}>
-          {name[0]}
+          {name ? name[0] : 'O'}
         </span>
-        <span style={{ minWidth: 0 }}>
-          <span style={{ display: 'block', fontFamily: 'var(--font-display)', fontSize: 24 }}>{name}</span>
+        <span style={{ minWidth: 0, flex: 1 }}>
+          <input
+            className="name-input"
+            value={p.settings.name}
+            placeholder="Come ti chiami"
+            aria-label="Il tuo nome"
+            maxLength={30}
+            onChange={e => setP(prev => ({ settings: { ...prev.settings, name: e.target.value } }))}
+          />
           <span style={{ display: 'block', fontSize: 13, color: 'var(--muted)' }}>Percorso calma · un passo alla volta</span>
         </span>
       </div>
@@ -216,7 +223,7 @@ export default function Profilo({ app }) {
           )}
         </div>
 
-        <div className="fineprint">Ora · v6.2</div>
+        <div className="fineprint">Ora · v7.0</div>
       </div>
     </div>
   )

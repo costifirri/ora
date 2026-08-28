@@ -74,7 +74,7 @@ export default function Diario({ app }) {
 
         {pagine.length === 0 ? (
           <div style={{ fontSize: 13, color: 'rgba(32,30,29,.45)', textAlign: 'center', lineHeight: 1.55, padding: '8px 20px' }}>
-            Non hai ancora scritto niente, {name}. La prima pagina è sempre la più difficile:
+            Non hai ancora scritto niente{name ? `, ${name}` : ''}. La prima pagina è sempre la più difficile:
             comincia da una riga qualsiasi.
           </div>
         ) : (

@@ -369,6 +369,14 @@ input[type='range'] { width: 100%; accent-color: var(--sage-500); height: 36px; 
 .howto a:hover { color: var(--terra-500); }
 .howto strong { font-weight: 700; color: var(--text); }
 
+.name-input {
+  display: block; width: 100%; border: 0; background: transparent; padding: 0 0 2px;
+  font-family: var(--font-display); font-size: 24px; color: var(--text);
+  border-bottom: 1px dashed rgba(32, 30, 29, .2);
+}
+.name-input::placeholder { color: rgba(32, 30, 29, .3); }
+.name-input:focus { outline: none; border-bottom-color: var(--sage-500); }
+
 .apikey-input {
   width: 100%; min-height: 46px; padding: 8px 16px; border-radius: 999px; border: 1px solid rgba(32, 30, 29, .16);
   background: var(--sand); font-size: 13px; color: var(--text);

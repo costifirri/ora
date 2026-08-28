@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { FLOW, COURSE, CUES, HARD, CORE, POSITIVE, GOOD_TAGS, SEED_HELPERS, SEED_TRIGGERS, SEED_WEEK, TRIGGER_TAGS, breath, answerFor, localDaily } from './data.js'
 import { buildSystem, askOra, weeklyReport, askOpener, extractMemories, monthChapter, dailyLine } from './ai.js'
-import { loadPersisted, savePersisted, adoptCloud, todayKey, emptyDay, exportAll, freshStart } from './storage.js'
+import { loadPersisted, savePersisted, adoptCloud, todayKey, emptyDay, exportAll, freshStart, clearApiKey } from './storage.js'
 import { isConfigured } from './firebase.js'
 import { watchAuth, loadCloud, saveCloud, signOutNow } from './cloud.js'
 import Auth from './screens/Auth.jsx'
@@ -120,7 +120,10 @@ export default function App() {
   const markDone = (key, val = true) => patchDay(cur => ({ done: { ...cur.done, [key]: val } }))
 
   const gentle = p.settings.gentle
-  const name = p.settings.name || 'Costanza'
+  // Il nome puo' mancare (primo avvio senza account): l'interfaccia se ne
+  // accorge e saluta senza, mentre a Ora serve comunque un modo di riferirsi.
+  const name = (p.settings.name || '').trim()
+  const aiName = name || 'lei'
   const pattern = p.settings.pattern || 'Calm six'
 
   // --- Toast ---
@@ -261,7 +264,7 @@ export default function App() {
     const righe = p.seraNotes.slice(-3).map(n => `- ${day2(n.ts)}: ${n.text}`)
 
     return [
-      `Chi e' ${name}:`,
+      `Chi e' ${aiName}:`,
       ...chiSei,
       '',
       capitoli.length ? 'Quello che hai capito di lei nei mesi passati:' : null,
@@ -310,7 +313,7 @@ export default function App() {
       replyT.current = setTimeout(() => finish(fallback), 1400)
       return
     }
-    askOra({ apiKey: p.settings.apiKey, settings: p.settings, system: buildSystem(contextBlock(), name), history })
+    askOra({ apiKey: p.settings.apiKey, settings: p.settings, system: buildSystem(contextBlock(), aiName), history })
       .then(answer => finish(answer || fallback))
       .catch(err => finish(fallback, err.message === 'Failed to fetch' ? 'connessione assente' : err.message))
   }
@@ -328,7 +331,7 @@ export default function App() {
       return
     }
     setS({ reportLoading: true })
-    weeklyReport({ apiKey: p.settings.apiKey, settings: p.settings, contextBlock: contextBlock(), name })
+    weeklyReport({ apiKey: p.settings.apiKey, settings: p.settings, contextBlock: contextBlock(), name: aiName })
       .then(text => {
         setS({ reportLoading: false })
         if (text) setP({ weeklyReport: { text, ts: Date.now() } })
@@ -345,7 +348,7 @@ export default function App() {
     if (!person.name.trim()) { flash('Dai prima un nome a questa persona.'); return }
     if (!liveAI) { flash('Per questo serve la chiave API, nel tuo profilo.'); return }
     setS({ openerLoading: person.id })
-    askOpener({ apiKey: p.settings.apiKey, settings: p.settings, person, userName: name })
+    askOpener({ apiKey: p.settings.apiKey, settings: p.settings, person, userName: aiName })
       .then(text => {
         setS({ openerLoading: null })
         if (text) {
@@ -376,7 +379,7 @@ export default function App() {
     dailyKinds.forEach(kind => {
       dailyLine({
         apiKey: p.settings.apiKey, settings: p.settings, kind,
-        segno: p.profile.segno, contextBlock: contextBlock(), name,
+        segno: p.profile.segno, contextBlock: contextBlock(), name: aiName,
       })
         .then(text => {
           if (!text) return
@@ -402,7 +405,7 @@ export default function App() {
     if (mine.length === 0) return
     const exchange = fresh.map(m => `${m.from === 'me' ? name : 'Ora'}: ${m.text}`).join('\n')
     const upTo = p.messages.length
-    extractMemories({ apiKey: p.settings.apiKey, settings: p.settings, exchange, known: p.memories, userName: name })
+    extractMemories({ apiKey: p.settings.apiKey, settings: p.settings, exchange, known: p.memories, userName: aiName })
       .then(found => {
         setP(prev => ({
           memoryUpTo: upTo,
@@ -459,7 +462,7 @@ export default function App() {
       ...(notes.length ? notes.map(n => `- ${day2(n.ts)}: ${n.text}`) : ['- nessuna']),
     ].join('\n')
     setS({ chapterLoading: true })
-    monthChapter({ apiKey: p.settings.apiKey, settings: p.settings, monthLabel: monthName(month), material, userName: name })
+    monthChapter({ apiKey: p.settings.apiKey, settings: p.settings, monthLabel: monthName(month), material, userName: aiName })
       .then(text => {
         setS({ chapterLoading: false })
         if (!text) { flash('Il racconto non e’ arrivato. Riprova tra poco.'); return }
@@ -522,14 +525,20 @@ export default function App() {
     go: screen => setS({ screen }),
     exportData: () => exportAll(p),
     user, hasAccounts: isConfigured,
-    leave: () => { signOutNow().then(() => { setPRaw(loadPersisted()); setS({ screen: 'oggi' }) }) },
+    leave: () => { clearApiKey(); signOutNow().then(() => { setPRaw(loadPersisted()); setS({ screen: 'oggi' }) }) },
   }
 
   const showTabs = ['oggi', 'te', 'pratica'].includes(s.screen)
 
   // Con gli account attivi, prima di tutto c'è la porta.
   if (user === undefined) return <div className="shell" />
-  if (isConfigured && user === null) return <div className="shell"><Auth /></div>
+  if (isConfigured && user === null) {
+    return (
+      <div className="shell">
+        <Auth onName={n => setP(prev => ({ settings: { ...prev.settings, name: n } }))} />
+      </div>
+    )
+  }
 
   return (
     <div className="shell">

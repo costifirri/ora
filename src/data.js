@@ -91,10 +91,10 @@ export const MOVE_SLOTS = [
 // Persone di partenza: da qui in poi vivono nei dati salvati (p.people)
 // e si possono rinominare, aggiungere e togliere.
 export const DEFAULT_PEOPLE = [
-  { id: 'p-compagno', name: 'Compagno', meta: 'ogni giorno · il legame più facile da dare per scontato', opener: 'Con chi ti vive accanto le conversazioni diventano organizzazione: turni, spesa, cosa si mangia. Prova a chiedergli una cosa che non c’entra niente con la casa: “C’è qualcosa che ti pesa in questo periodo e che non mi hai detto?” Poi lascia il silenzio, anche se è lungo.' },
-  { id: 'p-giulia', name: 'Giulia', meta: 'sorella', opener: 'Quando le rispondi a monosillabi, prova con una cosa vera: “In queste settimane sono stata poco presente. Come stai davvero?”' },
-  { id: 'p-marco', name: 'Marco', meta: 'collega', opener: 'Con lui parli solo di scadenze. Una domanda che apre: “Cosa ti sta piacendo in questo periodo, fuori da qui?”' },
-  { id: 'p-elena', name: 'Elena', meta: 'amica', opener: 'La prossima volta prova a dire una cosa che non hai ancora detto a nessuno di questo mese. Poi taci e ascolta.' },
+  { id: 'p-1', name: 'Compagno', meta: 'chi ti vive accanto', opener: 'Con chi ti vive accanto le conversazioni diventano organizzazione: turni, spesa, cosa si mangia. Prova a chiedere una cosa che non c’entra niente con la casa: “C’è qualcosa che ti pesa in questo periodo e che non mi hai detto?” Poi lascia il silenzio, anche se è lungo.' },
+  { id: 'p-2', name: 'Famiglia', meta: 'un genitore, una sorella, un fratello', opener: 'In famiglia si parla spesso di logistica e salute, raramente di come si sta. Prova con una cosa vera su di te — “in queste settimane sono stata poco presente” — e poi una domanda sola: “tu come stai davvero?”' },
+  { id: 'p-3', name: 'Al lavoro', meta: 'chi vedi ogni giorno e conosci poco', opener: 'Con chi lavori parli solo di scadenze, e va bene così finché non diventa l’unica cosa. Una domanda che apre senza invadere: “cosa ti sta piacendo in questo periodo, fuori da qui?”' },
+  { id: 'p-4', name: 'Un’amicizia', meta: 'qualcuno che vorresti sentire di più', opener: 'Le amicizie non si perdono per litigi, si perdono per rinvii. La prossima volta prova a dire una cosa che non hai ancora detto a nessuno di questo mese. Poi taci e ascolta.' },
 ]
 
 // Usato per chi aggiungi tu, finché non chiedi a Ora un modo di iniziare.
