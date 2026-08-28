@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { FLOW, COURSE, CUES, HARD, CORE, POSITIVE, GOOD_TAGS, SEED_HELPERS, SEED_TRIGGERS, SEED_WEEK, TRIGGER_TAGS, breath, answerFor, localDaily } from './data.js'
 import { buildSystem, askOra, weeklyReport, askOpener, extractMemories, monthChapter, dailyLine } from './ai.js'
 import { loadPersisted, savePersisted, adoptCloud, todayKey, emptyDay, exportAll, freshStart, clearApiKey } from './storage.js'
-import { isConfigured } from './firebase.js'
+import { isConfigured } from './supabase.js'
 import { watchAuth, loadCloud, saveCloud, signOutNow } from './cloud.js'
 import Auth from './screens/Auth.jsx'
 import Oggi from './screens/Oggi.jsx'
@@ -56,7 +56,11 @@ export default function App() {
   useEffect(() => {
     if (!isConfigured) return
     let stop
-    watchAuth(u => setUser(u)).then(fn => { stop = fn })
+    watchAuth(u => setUser(u))
+      .then(fn => { stop = fn })
+      // Se il modulo non si carica (offline, rete che blocca), meglio la
+      // schermata d'accesso con il suo errore che una pagina bianca per sempre.
+      .catch(() => setUser(null))
     return () => { if (stop) stop() }
   }, [])
 

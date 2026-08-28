@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { ArrowLeft } from 'lucide-react'
 import { TONES } from '../data.js'
 import { deleteAccount } from '../cloud.js'
-import { authError } from '../firebase.js'
+import { authError } from '../supabase.js'
 import { MODELS, DEFAULT_MODEL } from '../ai.js'
 
 const INTENTS = [
@@ -205,7 +205,7 @@ export default function Profilo({ app }) {
                       onClick={() => {
                         deleteAccount(pw)
                           .then(() => { setPw(''); setKilling(false) })
-                          .catch(err => flash(authError(err.code)))
+                          .catch(err => flash(authError(err.message)))
                       }}
                     >
                       Elimina
@@ -223,7 +223,7 @@ export default function Profilo({ app }) {
           )}
         </div>
 
-        <div className="fineprint">Ora · v7.0</div>
+        <div className="fineprint">Ora · v7.1</div>
       </div>
     </div>
   )

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { authError } from '../firebase.js'
+import { authError } from '../supabase.js'
 import { signIn, signUp, resetPassword } from '../cloud.js'
 
 export default function Auth({ onName }) {
@@ -23,12 +23,18 @@ export default function Auth({ onName }) {
         // Il nome prima della registrazione: cosi' e' gia' nei dati quando
         // vengono spinti nel tuo spazio appena creato.
         onName(nome.trim())
-        await signUp(email, password)
+        const dentro = await signUp(email, password)
+        if (!dentro) {
+          // Il progetto chiede la conferma via email: dirlo, invece di
+          // lasciarla davanti a una schermata che non cambia.
+          setNote('Ti ho mandato un’email di conferma. Aprila, poi torna qui e accedi.')
+          setMode('in')
+        }
       } else {
         await signIn(email, password)
       }
     } catch (err) {
-      setError(authError(err.code))
+      setError(authError(err.message))
     } finally {
       setBusy(false)
     }

@@ -89,15 +89,16 @@ La **chiave API non lascia mai il dispositivo**: vive in un cassetto localStorag
 
 ## Account (facoltativi)
 
-`src/firebase.js` nasce con i campi vuoti: così l'app è interamente locale, senza rete né account.
-Compilando la configurazione di un progetto Firebase si attivano registrazione via email,
+`src/supabase.js` nasce con i due campi vuoti: così l'app è interamente locale, senza rete né
+account. Compilando URL e chiave anon di un progetto Supabase si attivano registrazione via email,
 accesso e sincronizzazione — tutto quello che registri segue l'account su qualsiasi dispositivo,
-con regole Firestore che lasciano leggere solo al proprietario.
+con policy RLS che lasciano leggere e scrivere solo la propria riga.
 
-Istruzioni complete, regole di sicurezza e costi: **[FIREBASE.md](FIREBASE.md)**.
+Istruzioni complete, SQL delle policy e costi: **[SUPABASE.md](SUPABASE.md)**.
 
-Il codice di Firebase è caricato con un import dinamico: chi non attiva gli account non lo scarica
-nemmeno.
+Il client Supabase è caricato con un import dinamico: chi non attiva gli account non lo scarica
+nemmeno. Se quel caricamento fallisce (offline, rete che blocca) l'app mostra la schermata
+d'accesso con il suo errore, mai una pagina bianca.
 
 ## Scelte rispetto al prototipo
 
