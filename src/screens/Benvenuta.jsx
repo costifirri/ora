@@ -167,11 +167,27 @@ export default function Benvenuta({ app }) {
       sotto: 'Senza, l’app funziona tutta — tranne il parlare. Con la tua chiave ti rispondo davvero, invece che con frasi pronte.',
       corpo: (
         <>
+          <div className="card sage" style={{ fontSize: 13.5, lineHeight: 1.6, marginBottom: 12 }}>
+            <strong>Se non hai mai sentito parlare di chiavi</strong>, in due righe: è una specie di
+            password personale che permette a Ora di parlare con Claude a nome tuo. Serve perché il
+            conto delle risposte resti tuo, e non finisca a qualcun altro.
+            <div style={{ marginTop: 10 }}>
+              Non è un abbonamento: <strong>carichi un credito e si consuma solo quando Ora ti
+              risponde</strong>. Il minimo che si può caricare è circa 5 dollari, ed è già parecchio —
+              Ora usa apposta il modello più economico, e ogni risposta costa frazioni di centesimo.
+              Per un uso quotidiano normale, quei cinque dollari durano mesi.
+            </div>
+            <div style={{ marginTop: 10 }}>
+              Quando il credito finisce, Ora torna alle frasi pronte e basta. Non ti arriva nessun
+              addebito a sorpresa: più di quello che hai caricato non può spendere.
+            </div>
+          </div>
           <div className="card sand" style={{ fontSize: 13.5, lineHeight: 1.6, marginBottom: 12 }}>
             <ol style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 6 }}>
               <li>Vai su <a href="https://console.anthropic.com" target="_blank" rel="noreferrer" style={{ color: 'var(--sage-700)' }}>console.anthropic.com</a> e iscriviti.</li>
               <li>In <strong>API Keys</strong> tocca <strong>Create Key</strong>.</li>
               <li>Copiala subito: viene mostrata una volta sola.</li>
+              <li>In <strong>Billing</strong> carichi il credito, anche solo il minimo.</li>
             </ol>
           </div>
           <input
@@ -222,14 +238,12 @@ export default function Benvenuta({ app }) {
           {passo.avanti || 'Avanti'}
         </button>
 
-        {!ultimo && (
-          <button
-            className="step-link" style={{ color: 'rgba(32,30,29,.5)' }}
-            onClick={() => (i === 0 ? finishOnboarding() : setI(i + 1))}
-          >
-            {i === 0 ? 'Salta la presentazione' : 'Salta questa'}
-          </button>
-        )}
+        <button
+          className="step-link" style={{ color: 'rgba(32,30,29,.5)' }}
+          onClick={() => (i === 0 || ultimo ? finishOnboarding() : setI(i + 1))}
+        >
+          {i === 0 ? 'Salta la presentazione' : ultimo ? 'Salta, lo faccio dopo' : 'Salta questa'}
+        </button>
       </div>
     </div>
   )
