@@ -485,6 +485,12 @@ export default function App() {
   // Aperti = non chiusi. In scadenza = parcheggiati la cui ora è arrivata.
   const openLoops = p.loops.filter(l => !l.closedAt)
   const dueLoops = openLoops.filter(l => l.kind === 'preoccupazione' && l.dueAt && l.dueAt <= Date.now())
+  // I passi ancora aperti tornano in home, ma al massimo due e solo se recenti:
+  // devono ricordarti una cosa, non diventare una lista di cose da fare.
+  const openSteps = openLoops
+    .filter(l => l.kind === 'problema' && l.action && l.ts >= Date.now() - 7 * 24 * 3600 * 1000)
+    .slice(-2)
+    .reverse()
 
   // --- Diario ---------------------------------------------------------------
   const writeNote = text => {
@@ -509,7 +515,7 @@ export default function App() {
     weekResponses, restorers, goodCheckins, logPauseChoice, generateReport, localWeekSummary, makeOpener,
     harvestMemories, pendingMonth, monthName, writeChapter, dailyKinds,
     writeNote, removeNote,
-    saveLoop, closeLoop, openLoops, dueLoops,
+    saveLoop, closeLoop, openLoops, dueLoops, openSteps,
     resetAll: () => { setPRaw(freshStart(p.settings)); setS({ screen: 'oggi' }); flash('Ricominciamo da qui.') },
     startSession, stopSession, kindForCourse, logMood, sendText, liveAI,
     breath: t => breath(t, pattern),

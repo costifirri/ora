@@ -32,9 +32,10 @@ export default function Calendario({ app }) {
     const note = p.seraNotes.filter(n => todayKey(new Date(n.ts)) === dk)
     const convo = p.convoLog.filter(c => todayKey(new Date(c.ts)) === dk)
     const pause = p.pauseLog.filter(x => todayKey(new Date(x.ts)) === dk)
+    const loops = p.loops.filter(l => todayKey(new Date(l.ts)) === dk)
     const d = p.days[dk]
     const fatto = d ? Object.values(d.done).filter(Boolean).length : 0
-    return { cks, note, convo, pause, d, fatto, vuoto: !cks.length && !note.length && !convo.length && !pause.length && !fatto }
+    return { cks, note, convo, pause, loops, d, fatto, vuoto: !cks.length && !note.length && !convo.length && !pause.length && !loops.length && !fatto }
   }
 
   const celle = []
@@ -144,6 +145,20 @@ export default function Calendario({ app }) {
                   <div>
                     <div className="giorno-et">Nel Momento difficile hai scelto</div>
                     <div style={{ fontSize: 14.5, lineHeight: 1.5 }}>{dett.pause.map(x => x.choice).join('; ')}</div>
+                  </div>
+                )}
+                {dett.loops.length > 0 && (
+                  <div>
+                    <div className="giorno-et">Un pensiero che girava</div>
+                    {dett.loops.map(l => (
+                      <div key={l.id} style={{ fontSize: 14.5, lineHeight: 1.5, marginBottom: 6 }}>
+                        {l.text}
+                        <span style={{ display: 'block', fontSize: 12.5, color: 'rgba(32,30,29,.55)', marginTop: 2 }}>
+                          {l.action ? `primo passo: ${l.action}` : l.dueAt ? 'messo da parte' : 'lasciato andare'}
+                          {l.closedAt ? ' · chiuso' : ''}
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 )}
                 {dett.d && (dett.d.moveMin > 0 || dett.d.sleep != null || dett.d.water > 0) && (

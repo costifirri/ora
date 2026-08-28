@@ -3,7 +3,7 @@ import { COURSE, MOVE_SLOTS } from '../data.js'
 import { nowCard } from '../nowCard.js'
 
 export default function Oggi({ app }) {
-  const { p, setS, day, patchDay, markDone, flash, startSession, kindForCourse, name, logged, todayCheckins, weekResponses, dueLoops, closeLoop } = app
+  const { p, setS, day, patchDay, markDone, flash, startSession, kindForCourse, name, logged, todayCheckins, weekResponses, dueLoops, openSteps, closeLoop } = app
   const card = nowCard({ day, p, logged, todayCheckins, weekResponses })
 
   const act = () => {
@@ -114,6 +114,25 @@ export default function Oggi({ app }) {
                 Sì, riprendiamolo
               </button>
             </div>
+          </div>
+        ))}
+
+        {openSteps.map(l => (
+          <div key={l.id} className="step-open">
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div className="kicker" style={{ color: 'rgba(86,99,63,.8)', marginBottom: 6 }}>Un passo che ti sei data</div>
+              <div style={{ fontSize: 14.5, lineHeight: 1.5, color: 'var(--forest)' }}>{l.action}</div>
+              <div style={{ fontSize: 12, color: 'rgba(61,71,43,.65)', lineHeight: 1.45, marginTop: 4 }}>
+                per: {l.text.toLowerCase()}
+              </div>
+            </div>
+            <button
+              className="btn-outline"
+              style={{ minHeight: 42, padding: '0 16px', flex: 'none', borderColor: 'rgba(86,99,63,.4)', color: 'var(--sage-700)' }}
+              onClick={() => { closeLoop(l.id); flash('Fatto. Quel giro si è chiuso davvero.') }}
+            >
+              Fatto
+            </button>
           </div>
         ))}
 

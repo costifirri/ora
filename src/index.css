@@ -203,6 +203,13 @@ input, textarea { font-family: inherit; }
   display: flex; align-items: center; justify-content: center;
 }
 
+/* --- Un passo che ti sei data: promemoria, non lista di cose da fare --- */
+.step-open {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 18px; border-radius: 26px;
+  background: var(--sage-050); border: 1px solid rgba(122, 138, 94, .3);
+}
+
 /* --- Ingresso alla conversazione --- */
 .talk-row {
   display: flex; align-items: center; gap: 14px; width: 100%; min-height: 64px;
