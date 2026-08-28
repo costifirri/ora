@@ -11,8 +11,8 @@
 // La chiave anon NON è un segreto: identifica il progetto e non autorizza
 // niente da sola. La sicurezza sta nelle policy RLS (vedi SUPABASE.md).
 
-export const supabaseUrl = ''
-export const supabaseAnonKey = ''
+export const supabaseUrl = 'https://ffpxnxrwesynuwojfojk.supabase.co'
+export const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZmcHhueHJ3ZXN5bnV3b2pmb2prIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc5MDUwMjYsImV4cCI6MjEwMzQ4MTAyNn0.r-LxLeksvr3EjoGvHodLkebki34WK_QQRNditOnDae8'
 
 export const isConfigured = Boolean(supabaseUrl && supabaseAnonKey)
 
