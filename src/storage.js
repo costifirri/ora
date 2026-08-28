@@ -29,6 +29,7 @@ export const DEFAULT_PERSISTED = {
   seraNotes: [],       // {text, ts, source:'diario'|'sera'} — diario e righe della sera, insieme
   convoLog: [],        // {who, tone, unsaid, ts}
   pauseLog: [],        // {choice, ts} — risposte scelte nel Momento difficile
+  loops: [],           // {id, text, kind:'problema'|'preoccupazione', action?, dueAt?, ts, closedAt?}
   people: structuredClone(DEFAULT_PEOPLE), // {id, name, meta, opener} — modificabili
 
   // --- Memoria: chi sei, cosa mi hai detto, cosa ho capito ---

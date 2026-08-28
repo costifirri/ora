@@ -191,6 +191,18 @@ input, textarea { font-family: inherit; }
   margin-top: 10px;
 }
 
+/* --- Il pensiero che gira: fratello del Momento difficile, ma mentale --- */
+.loop-pill {
+  display: flex; align-items: center; gap: 14px; width: 100%; min-height: 66px;
+  padding: 14px 20px; border: 1px solid rgba(122, 138, 94, .4); border-radius: 999px;
+  background: var(--sage-100); cursor: pointer; text-align: left;
+}
+.loop-pill:hover { background: var(--sage-200); }
+.loop-dot {
+  width: 34px; height: 34px; flex: none; border-radius: 999px; background: var(--sage-050);
+  display: flex; align-items: center; justify-content: center;
+}
+
 /* --- Ingresso alla conversazione --- */
 .talk-row {
   display: flex; align-items: center; gap: 14px; width: 100%; min-height: 64px;

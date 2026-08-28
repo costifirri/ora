@@ -344,3 +344,37 @@ export function localDaily(kind, now = new Date()) {
   const list = kind === 'fatto' ? DAILY_FACTS : DAILY_THOUGHTS
   return list[idx % list.length]
 }
+
+
+// --- Il pensiero che gira --------------------------------------------------
+// La ruminazione e' il pensiero astratto e ripetitivo ("perche' sono fatta
+// cosi'"); il pensiero concreto ("cosa e' successo, cosa faccio") non lo e'.
+// Questo strumento fa una cosa sola: portare il giro dall'astratto al
+// concreto, e chiuderlo. Deve durare meno di un minuto, perche' una mente che
+// rimugina non segue un protocollo lungo.
+
+export const QUANDO = [
+  { k: 'stasera', label: 'Stasera', note: 'Alle sei, quando la giornata rallenta.' },
+  { k: 'domani', label: 'Domani mattina', note: 'Con la testa riposata pesa meno.' },
+  { k: 'settimana', label: 'Fra una settimana', note: 'Se fra sette giorni conta ancora, la riprendiamo.' },
+  { k: 'mai', label: 'Non la riprendo', note: 'La lascio andare adesso.' },
+]
+
+// Momento in cui un pensiero parcheggiato torna a farsi vivo.
+export function quandoTs(k, now = new Date()) {
+  const d = new Date(now)
+  if (k === 'mai') return null
+  if (k === 'stasera') {
+    d.setHours(18, 0, 0, 0)
+    if (d <= now) d.setDate(d.getDate() + 1)
+    return d.getTime()
+  }
+  if (k === 'domani') {
+    d.setDate(d.getDate() + 1)
+    d.setHours(9, 0, 0, 0)
+    return d.getTime()
+  }
+  d.setDate(d.getDate() + 7)
+  d.setHours(9, 0, 0, 0)
+  return d.getTime()
+}

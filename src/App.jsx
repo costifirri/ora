@@ -17,6 +17,7 @@ import Profilo from './screens/Profilo.jsx'
 import Memoria from './screens/Memoria.jsx'
 import Calendario from './screens/Calendario.jsx'
 import Diario from './screens/Diario.jsx'
+import Pensiero from './screens/Pensiero.jsx'
 
 const TABS = [
   { id: 'oggi', label: 'Ora' },
@@ -287,6 +288,9 @@ export default function App() {
         ? '- cosa la rimette insieme: non ancora osservato (troppi pochi check-in buoni con un tag); non darlo per noto'
         : '- cosa la rimette insieme, dai suoi dati: ' + restorers.list.map(t => `${t.label} (${t.n}/${t.of})`).join(', '),
       `- check-in buoni negli ultimi 7 giorni: ${goodCheckins.filter(c => c.ts >= weekAgo).length}`,
+      openLoops.length
+        ? '- pensieri che sta tenendo da parte: ' + openLoops.slice(-4).map(l => `"${l.text}"${l.kind === 'problema' ? ` (primo passo: ${l.action})` : ' (parcheggiato)'}`).join('; ')
+        : null,
     ].filter(x => x !== null).join('\n')
   }
 
@@ -465,6 +469,23 @@ export default function App() {
       .catch(err => { setS({ chapterLoading: false }); flash(`Non e’ arrivato (${err.message}).`) })
   }
 
+  // --- Il pensiero che gira -------------------------------------------------
+  const saveLoop = ({ text, kind, action, dueAt, closedAt }) => {
+    setP(prev => ({
+      loops: [...prev.loops, { id: `l-${Date.now()}`, text, kind, action: action || null, dueAt: dueAt || null, ts: Date.now(), closedAt: closedAt || null }],
+    }))
+    flash(kind === 'problema'
+      ? 'Non è più un pensiero che gira: è un passo.'
+      : closedAt ? 'Lasciato andare. Se torna, sai che ha già avuto il suo posto.'
+        : 'Parcheggiato. Ha un orario: non deve chiederti attenzione fino ad allora.')
+  }
+  const closeLoop = id => setP(prev => ({
+    loops: prev.loops.map(l => (l.id === id ? { ...l, closedAt: Date.now() } : l)),
+  }))
+  // Aperti = non chiusi. In scadenza = parcheggiati la cui ora è arrivata.
+  const openLoops = p.loops.filter(l => !l.closedAt)
+  const dueLoops = openLoops.filter(l => l.kind === 'preoccupazione' && l.dueAt && l.dueAt <= Date.now())
+
   // --- Diario ---------------------------------------------------------------
   const writeNote = text => {
     const t = text.trim()
@@ -488,6 +509,7 @@ export default function App() {
     weekResponses, restorers, goodCheckins, logPauseChoice, generateReport, localWeekSummary, makeOpener,
     harvestMemories, pendingMonth, monthName, writeChapter, dailyKinds,
     writeNote, removeNote,
+    saveLoop, closeLoop, openLoops, dueLoops,
     resetAll: () => { setPRaw(freshStart(p.settings)); setS({ screen: 'oggi' }); flash('Ricominciamo da qui.') },
     startSession, stopSession, kindForCourse, logMood, sendText, liveAI,
     breath: t => breath(t, pattern),
@@ -517,6 +539,7 @@ export default function App() {
       {s.screen === 'memoria' && <Memoria app={app} />}
       {s.screen === 'calendario' && <Calendario app={app} />}
       {s.screen === 'diario' && <Diario app={app} />}
+      {s.screen === 'pensiero' && <Pensiero app={app} />}
 
       {s.toast && <div className="toast" role="status">{s.toast}</div>}
 

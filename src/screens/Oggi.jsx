@@ -1,9 +1,9 @@
-import { ArrowRight, PenLine } from 'lucide-react'
+import { ArrowRight, PenLine, RotateCw } from 'lucide-react'
 import { COURSE, MOVE_SLOTS } from '../data.js'
 import { nowCard } from '../nowCard.js'
 
 export default function Oggi({ app }) {
-  const { p, setS, day, patchDay, markDone, flash, startSession, kindForCourse, name, logged, todayCheckins, weekResponses } = app
+  const { p, setS, day, patchDay, markDone, flash, startSession, kindForCourse, name, logged, todayCheckins, weekResponses, dueLoops, closeLoop } = app
   const card = nowCard({ day, p, logged, todayCheckins, weekResponses })
 
   const act = () => {
@@ -90,6 +90,32 @@ export default function Oggi({ app }) {
             <span style={{ display: 'block', fontSize: 12, color: 'rgba(140,73,26,.75)' }}>Novanta secondi, in qualsiasi momento</span>
           </span>
         </button>
+
+        <button className="loop-pill" onClick={() => setS({ screen: 'pensiero' })}>
+          <span className="loop-dot"><RotateCw size={16} strokeWidth={2.75} color="var(--sage-700)" /></span>
+          <span style={{ flex: 1, minWidth: 0 }}>
+            <span style={{ display: 'block', fontFamily: 'var(--font-display)', fontSize: 16, color: 'var(--forest)' }}>Un pensiero che gira</span>
+            <span style={{ display: 'block', fontSize: 12, color: 'rgba(61,71,43,.75)' }}>Un minuto per fermarlo, invece di rigirarlo</span>
+          </span>
+        </button>
+
+        {dueLoops.map(l => (
+          <div key={l.id} className="card sand">
+            <div className="kicker" style={{ color: 'var(--sage-700)', marginBottom: 8 }}>L’avevi messo da parte</div>
+            <div style={{ fontSize: 15, lineHeight: 1.55, color: 'rgba(32,30,29,.85)' }}>{l.text}</div>
+            <div style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.5, marginTop: 8 }}>
+              È l’ora che avevi scelto. Conta ancora quanto allora?
+            </div>
+            <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
+              <button className="btn-primary" style={{ flex: 1, width: 'auto', minHeight: 46, fontSize: 15 }} onClick={() => closeLoop(l.id)}>
+                No, lascialo andare
+              </button>
+              <button className="btn-outline" style={{ minHeight: 46 }} onClick={() => setS({ screen: 'pensiero' })}>
+                Sì, riprendiamolo
+              </button>
+            </div>
+          </div>
+        ))}
 
         <button className="talk-row" onClick={() => setS({ screen: 'coach' })}>
           <span className="coach-avatar" style={{ width: 38, height: 38, fontSize: 15 }}>O</span>

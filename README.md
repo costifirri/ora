@@ -135,6 +135,12 @@ Aggiunte per sostenere l'uso quotidiano, nello spirito del design (nessun punteg
   entra nel contesto dell'AI.
 - **Report settimanale AI** — due paragrafi scritti da Ora sui dati veri.
   Senza chiave API, un riepilogo locale calcolato.
+- **Un pensiero che gira** (pillola in home, sorella del Momento difficile) — lo strumento contro
+  la ruminazione. Non e' un posto dove scrivere: e' un bivio di un minuto. Nomini il pensiero
+  (astratto → concreto), poi l'unica domanda che divide: *puoi farci qualcosa?* Se si', il primo
+  passo piu' piccolo e diventa un'azione; se no, gli dai un orario (`quandoTs` in `data.js`) e a
+  quell'ora torna in home a chiederti se conta ancora. Vive in `p.loops`; i pensieri aperti entrano
+  nel contesto di Ora.
 - **Diario** (dalla home, "Scrivi nel diario") — scrittura libera, quando vuoi, piu' volte al giorno.
   Condivide l'archivio con le tre righe del rituale della sera (`p.seraNotes`, campo `source`):
   un solo mucchio di scritti, cosi' calendario, memoria e racconto dei mesi li leggono tutti
