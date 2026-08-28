@@ -36,7 +36,7 @@ export function loadBackend() {
 // Messaggi in italiano al posto di quelli tecnici di Supabase.
 export function authError(message = '') {
   const m = message.toLowerCase()
-  if (m.includes('invalid login credentials')) return 'Email o password non corrispondono.'
+  if (m.includes('invalid login credentials')) return 'Email o password non corrispondono. Se non ti sei ancora iscritta, crea prima il tuo spazio qui sotto.'
   if (m.includes('email not confirmed')) return 'Devi prima confermare l’email: controlla la posta.'
   if (m.includes('user already registered')) return 'Esiste già un account con questa email. Prova ad accedere.'
   if (m.includes('password should be')) return 'La password è troppo corta: servono almeno sei caratteri.'
