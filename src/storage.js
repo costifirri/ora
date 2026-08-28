@@ -25,6 +25,7 @@ export function todayKey(d = new Date()) {
 export const EMPTY_DONE = { checkin: false, meditate: false, move: false, connect: false, scarico: false, sera: false, letto: false }
 
 export const DEFAULT_PERSISTED = {
+  onboarded: false,   // la presentazione si fa una volta sola
   checkins: [],        // {word, core, intensity, tag?, ts}
   seraNotes: [],       // {text, ts, source:'diario'|'sera'} — diario e righe della sera, insieme
   convoLog: [],        // {who, tone, unsaid, ts}
@@ -68,6 +69,9 @@ export function loadPersisted() {
       ...structuredClone(DEFAULT_PERSISTED),
       ...data,
       days,
+      // Chi ha gia' dei dati qui dentro viene da prima della presentazione:
+      // non gliela rifaccio fare.
+      onboarded: data.onboarded ?? true,
       // Una lista vuota è una scelta legittima; solo l'assenza va seminata.
       people: Array.isArray(data.people) ? data.people : structuredClone(DEFAULT_PEOPLE),
       profile: { ...DEFAULT_PERSISTED.profile, ...(data.profile || {}) },
@@ -112,6 +116,7 @@ export function adoptCloud(cloud) {
     ...cloud,
     days,
     people: Array.isArray(cloud.people) ? cloud.people : structuredClone(DEFAULT_PEOPLE),
+    onboarded: cloud.onboarded ?? true,
     profile: { ...DEFAULT_PERSISTED.profile, ...(cloud.profile || {}) },
     settings: {
       ...DEFAULT_PERSISTED.settings,
@@ -138,7 +143,7 @@ export function emptyDay() {
 export function clearApiKey() { writeApiKey('') }
 
 export function freshStart(settings) {
-  return { ...structuredClone(DEFAULT_PERSISTED), settings: { ...settings } }
+  return { ...structuredClone(DEFAULT_PERSISTED), onboarded: true, settings: { ...settings } }
 }
 
 export function exportAll(p) {

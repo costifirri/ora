@@ -5,6 +5,7 @@ import { loadPersisted, savePersisted, adoptCloud, todayKey, emptyDay, exportAll
 import { isConfigured } from './supabase.js'
 import { watchAuth, loadCloud, saveCloud, signOutNow } from './cloud.js'
 import Auth from './screens/Auth.jsx'
+import Benvenuta from './screens/Benvenuta.jsx'
 import Oggi from './screens/Oggi.jsx'
 import Te from './screens/Te.jsx'
 import Checkin from './screens/Checkin.jsx'
@@ -529,6 +530,8 @@ export default function App() {
     go: screen => setS({ screen }),
     exportData: () => exportAll(p),
     user, hasAccounts: isConfigured,
+    finishOnboarding: () => { setP({ onboarded: true }); setS({ screen: 'oggi' }); flash('Piacere. Da qui in poi comincio a conoscerti.') },
+    restartOnboarding: () => setP({ onboarded: false }),
     leave: () => { clearApiKey(); signOutNow().then(() => { setPRaw(loadPersisted()); setS({ screen: 'oggi' }) }) },
   }
 
@@ -543,6 +546,8 @@ export default function App() {
       </div>
     )
   }
+
+  if (!p.onboarded) return <div className="shell"><Benvenuta app={app} /></div>
 
   return (
     <div className="shell">

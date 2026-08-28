@@ -13,7 +13,7 @@ const INTENTS = [
 ]
 
 export default function Profilo({ app }) {
-  const { p, setS, setP, name, exportData, user, hasAccounts, leave, flash, resetAll } = app
+  const { p, setS, setP, name, exportData, user, hasAccounts, leave, flash, resetAll, restartOnboarding } = app
   const gentle = p.settings.gentle
   const [killing, setKilling] = useState(false)
   const [wiping, setWiping] = useState(false)
@@ -143,12 +143,20 @@ export default function Profilo({ app }) {
           </button>
 
           {!wiping ? (
-            <button
-              className="step-link" style={{ color: 'rgba(32,30,29,.45)', marginTop: 10 }}
-              onClick={() => setWiping(true)}
-            >
-              Ricomincia da zero
-            </button>
+            <>
+              <button
+                className="step-link" style={{ color: 'var(--sage-700)', marginTop: 10 }}
+                onClick={restartOnboarding}
+              >
+                Rifai la presentazione
+              </button>
+              <button
+                className="step-link" style={{ color: 'rgba(32,30,29,.45)' }}
+                onClick={() => setWiping(true)}
+              >
+                Ricomincia da zero
+              </button>
+            </>
           ) : (
             <div style={{ marginTop: 14, background: 'var(--sand)', borderRadius: 24, padding: '16px 18px' }}>
               <div style={{ fontSize: 13, lineHeight: 1.55, color: 'rgba(32,30,29,.7)', marginBottom: 12 }}>
@@ -223,7 +231,7 @@ export default function Profilo({ app }) {
           )}
         </div>
 
-        <div className="fineprint">Ora · v7.3</div>
+        <div className="fineprint">Ora · v7.4</div>
       </div>
     </div>
   )
