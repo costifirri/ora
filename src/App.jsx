@@ -62,7 +62,12 @@ export default function App() {
       // Se il modulo non si carica (offline, rete che blocca), meglio la
       // schermata d'accesso con il suo errore che una pagina bianca per sempre.
       .catch(() => setUser(null))
-    return () => { if (stop) stop() }
+    // Un import puo' anche non fallire: puo' restare appeso, e allora nessuno
+    // dei due rami qui sopra scatta e resti davanti a una pagina vuota per
+    // sempre. Dopo dieci secondi smetto di aspettare e mostro la porta: se poi
+    // la sessione arriva davvero, entra da sola.
+    const lento = setTimeout(() => setUser(u => (u === undefined ? null : u)), 10000)
+    return () => { clearTimeout(lento); if (stop) stop() }
   }, [])
 
   // Al primo accesso: se lassù c'è già qualcosa lo adotto, altrimenti

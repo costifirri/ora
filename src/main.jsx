@@ -3,6 +3,18 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
 
+// Via d'uscita: se una cache guasta impedisce all'app di partire, aprire
+// l'indirizzo con ?reset in fondo butta via service worker e cache e ricarica
+// pulito. Non tocca i tuoi dati, che stanno altrove.
+if (location.search.includes('reset')) {
+  Promise.all([
+    'serviceWorker' in navigator
+      ? navigator.serviceWorker.getRegistrations().then(rs => Promise.all(rs.map(r => r.unregister())))
+      : Promise.resolve(),
+    'caches' in window ? caches.keys().then(ks => Promise.all(ks.map(k => caches.delete(k)))) : Promise.resolve(),
+  ]).catch(() => {}).then(() => location.replace(location.pathname))
+}
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <App />
