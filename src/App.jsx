@@ -310,13 +310,13 @@ export default function App() {
   const liveAI = !!p.settings.apiKey
   const sendText = text => {
     if (!text.trim()) return
-    const history = [...p.messages, { from: 'me', text }]
+    const history = [...p.messages, { from: 'me', text, ts: Date.now() }]
     setP({ messages: history })
     setS({ draft: '', typing: true, aiError: null })
     const fallback = answerFor(text)
     const finish = (reply, aiError = null) => {
       setS({ typing: false, aiError })
-      setP(prev => ({ messages: [...prev.messages, { from: 'ora', text: reply }] }))
+      setP(prev => ({ messages: [...prev.messages, { from: 'ora', text: reply, ts: Date.now() }] }))
     }
     if (!liveAI) {
       clearTimeout(replyT.current)
@@ -555,7 +555,7 @@ export default function App() {
   if (!p.onboarded) return <div className="shell"><Benvenuta app={app} /></div>
 
   return (
-    <div className="shell">
+    <div className={`shell${s.screen === 'coach' ? ' locked' : ''}`}>
       {s.screen === 'oggi' && <Oggi app={app} />}
       {s.screen === 'te' && <Te app={app} />}
       {s.screen === 'pratica' && <Pratica app={app} />}

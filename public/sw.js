@@ -1,5 +1,5 @@
 // Service worker minimale: cache-first per gli asset, network-first per il documento.
-const CACHE = 'ora-v24'
+const CACHE = 'ora-v25'
 
 self.addEventListener('install', e => {
   self.skipWaiting()
