@@ -200,7 +200,7 @@ export default function Oggi({ app }) {
           <span style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
             <span style={{ display: 'block', fontSize: 15, fontWeight: 600 }}>Il giardino</span>
             <span style={{ display: 'block', fontSize: 12, color: 'var(--muted)' }}>
-              Sabbia da rastrellare, quando vuoi
+              Quello che hai fatto, diventato piante
             </span>
           </span>
           <ArrowRight size={18} strokeWidth={2.75} color="var(--sage-500)" />
