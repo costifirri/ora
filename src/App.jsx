@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { FLOW, COURSE, CUES, HARD, CORE, POSITIVE, GOOD_TAGS, SEED_HELPERS, SEED_TRIGGERS, SEED_WEEK, TRIGGER_TAGS, breath, answerFor, localDaily } from './data.js'
+import { FLOW, COURSE, CUES, HARD, CORE, POSITIVE, GOOD_TAGS, SEED_HELPERS, SEED_TRIGGERS, SEED_WEEK, TRIGGER_TAGS, breath, answerFor, localDaily, RIPOSO_LABEL } from './data.js'
 import { buildSystem, askOra, weeklyReport, askOpener, extractMemories, monthChapter, dailyLine } from './ai.js'
 import { loadPersisted, savePersisted, adoptCloud, todayKey, emptyDay, exportAll, freshStart, clearApiKey } from './storage.js'
 import { isConfigured } from './supabase.js'
@@ -9,6 +9,7 @@ import Benvenuta from './screens/Benvenuta.jsx'
 import Oggi from './screens/Oggi.jsx'
 import Te from './screens/Te.jsx'
 import Checkin from './screens/Checkin.jsx'
+import Riposo from './screens/Riposo.jsx'
 import Pausa from './screens/Pausa.jsx'
 import Pratica from './screens/Pratica.jsx'
 import Session from './screens/Session.jsx'
@@ -239,13 +240,35 @@ export default function App() {
     if (ran) flash(key === 'letto' ? 'Buonanotte. Domani il flusso riparte dalla colazione.' : 'Ti sei seduta. È tutto quello che serviva.')
   }
 
+  // --- Riposo ---
+  // Le parole con cui racconto la notte, in un posto solo.
+  const logRest = () => {
+    markDone('riposo')
+    setS({ screen: 'oggi' })
+    const ore = day.sleep != null ? `${day.sleep} ore` : null
+    const come = RIPOSO_LABEL[day.rested]
+    const detto = [ore, come].filter(Boolean).join(', ')
+    flash(detto ? `Segnato: ${detto}.` : 'Segnato.')
+  }
+
+  // Cosa vedo nelle notti dell'ultima settimana. Niente medie finte: se ho
+  // pochi dati lo dico, invece di far finta di sapere.
+  const sleepWeek = (() => {
+    const weekAgo = Date.now() - 7 * 86400000
+    const notti = Object.entries(p.days)
+      .filter(([k, d]) => d.sleep != null && new Date(k).getTime() >= weekAgo)
+      .map(([, d]) => d.sleep)
+    if (notti.length < 3) return null
+    const media = notti.reduce((a, b) => a + b, 0) / notti.length
+    return `Nelle ultime ${notti.length} notti che hai segnato hai dormito in media ${media.toFixed(1)} ore.`
+  })()
+
   // --- Check-in ---
   const logMood = () => {
     const core = CORE[s.core]
     const word = s.nuance === 'Altro ancora' ? core.key : (s.nuance || core.key)
     const goPausa = HARD.includes(core.key) && s.intensity >= 4
     setP(prev => ({ checkins: [...prev.checkins, { word, core: core.key, intensity: s.intensity, tag: s.checkinTag || undefined, ts: Date.now() }] }))
-    markDone('checkin')
     setS({ screen: goPausa ? 'pausa' : 'oggi', pausaStep: 0, pausaT: 0, checkinTag: null })
     flash(goPausa
       ? `Registrato: ${word.toLowerCase()}. Prima di tutto il resto, novanta secondi.`
@@ -287,10 +310,16 @@ export default function App() {
       ...(righe.length ? righe : []),
       righe.length ? '' : null,
       'Oggi:',
-      '- ultimo check-in: ' + (logged ? logged.word + (logged.intensity >= 4 ? ' (intensa)' : '') + (logged.tag ? `, innesco: ${logged.tag}` : '') : 'non ancora fatto oggi'),
+      // Tutti i momenti di oggi, con l'ora: e' l'andamento della giornata che
+      // dice qualcosa, non un voto solo preso a un'ora fissa.
+      '- come e' + "'" + ' andata oggi: ' + (todayCheckins.length
+        ? todayCheckins.map(c => `${new Date(c.ts).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })} ${c.word}${c.intensity >= 4 ? ' (intensa)' : ''}${c.tag ? `, innesco: ${c.tag}` : ''}`).join('; ')
+        : 'non ha ancora segnato come sta'),
       '- passi della giornata gia' + "'" + ' fatti: ' + (fatti.length ? fatti.join('; ') : 'nessuno'),
       `- passo del percorso di meditazione: ${p.courseStep + 1} di 7 (${COURSE[p.courseStep].label})`,
-      `- acqua: ${day.water} bicchieri su 8; movimento: ${day.moveMin} minuti` + (day.sleep != null ? `; ha dormito ${day.sleep} ore` : ''),
+      `- acqua: ${day.water} bicchieri su 8; movimento: ${day.moveMin} minuti`
+        + (day.sleep != null ? `; stanotte ha dormito ${day.sleep} ore` : '')
+        + (day.rested ? `; al risveglio si sentiva ${RIPOSO_LABEL[day.rested]}` : ''),
       '',
       'Ultimi sette giorni:',
       `- check-in: ${weekCheckins.length}, di cui intensi: ${weekCheckins.filter(c => c.intensity >= 4 && HARD.includes(c.core)).length}`,
@@ -530,7 +559,7 @@ export default function App() {
     writeNote, removeNote,
     saveLoop, closeLoop, openLoops, dueLoops, openSteps,
     resetAll: () => { setPRaw(freshStart(p.settings)); setS({ screen: 'oggi' }); flash('Ricominciamo da qui.') },
-    startSession, stopSession, kindForCourse, logMood, sendText, liveAI,
+    startSession, stopSession, kindForCourse, logMood, logRest, sleepWeek, sendText, liveAI,
     breath: t => breath(t, pattern),
     go: screen => setS({ screen }),
     exportData: () => exportAll(p),
@@ -560,6 +589,7 @@ export default function App() {
       {s.screen === 'te' && <Te app={app} />}
       {s.screen === 'pratica' && <Pratica app={app} />}
       {s.screen === 'checkin' && <Checkin app={app} />}
+      {s.screen === 'riposo' && <Riposo app={app} />}
       {s.screen === 'pausa' && <Pausa app={app} />}
       {s.screen === 'session' && <Session app={app} />}
       {s.screen === 'sera' && <Sera app={app} />}

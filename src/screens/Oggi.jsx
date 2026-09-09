@@ -1,13 +1,17 @@
-import { ArrowRight, PenLine, RotateCw } from 'lucide-react'
+import { ArrowRight, PenLine, RotateCw, Sparkle } from 'lucide-react'
 import { COURSE, MOVE_SLOTS } from '../data.js'
 import { nowCard } from '../nowCard.js'
+
+const ora = ts => new Date(ts).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
 
 export default function Oggi({ app }) {
   const { p, setS, day, patchDay, markDone, flash, startSession, kindForCourse, name, logged, todayCheckins, weekResponses, dueLoops, openSteps, closeLoop } = app
   const card = nowCard({ day, p, logged, todayCheckins, weekResponses })
 
+  const apriRuota = () => setS({ screen: 'checkin', core: null, nuance: null, intensity: 3, checkinTag: null })
+
   const act = () => {
-    if (card.act === 'checkin') setS({ screen: 'checkin', core: null, nuance: null, intensity: 3, checkinTag: null })
+    if (card.act === 'riposo') setS({ screen: 'riposo' })
     else if (card.act === 'course') startSession(kindForCourse(p.courseStep), COURSE[p.courseStep].mins, 'meditate', p.courseStep)
     else if (card.act === 'respiro') startSession('respiro', 3, card.kind === 'step' ? 'scarico' : null)
     else if (card.act === 'letto') startSession('letto', 8, 'letto')
@@ -82,6 +86,25 @@ export default function Oggi({ app }) {
             </div>
           )}
         </div>
+
+        <button className="talk-row" onClick={apriRuota}>
+          <span style={{
+            width: 38, height: 38, flex: 'none', borderRadius: 999, background: 'var(--sage-100)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <Sparkle size={17} strokeWidth={2.75} color="var(--sage-700)" />
+          </span>
+          <span style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
+            <span style={{ display: 'block', fontSize: 15, fontWeight: 600 }}>Come stai adesso</span>
+            <span style={{ display: 'block', fontSize: 12, color: 'var(--muted)' }}>
+              {todayCheckins.length === 0
+                ? 'Quando cambia, non a un’ora fissa'
+                : (todayCheckins.length > 3 ? '… ' : 'Oggi: ')
+                  + todayCheckins.slice(-3).map(c => `${ora(c.ts)} ${c.word.toLowerCase()}`).join(' · ')}
+            </span>
+          </span>
+          <ArrowRight size={18} strokeWidth={2.75} color="var(--sage-500)" />
+        </button>
 
         <button className="pausa-pill" onClick={() => setS({ screen: 'pausa', pausaStep: 0, pausaT: 0 })}>
           <span className="pausa-dot" />

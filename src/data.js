@@ -66,8 +66,8 @@ export const CUES = {
 }
 
 export const FLOW = [
-  { k: 'checkin', when: 'Colazione', title: 'Come stai, prima del telefono', dur: '1 min', cta: 'Apri la ruota', act: 'checkin',
-    body: 'Due tocchi sulla ruota, con il caffè in mano. Non serve stare bene per rispondere: serve solo dare un nome.' },
+  { k: 'riposo', when: 'Al risveglio', title: 'Com’è andata la notte', dur: '30 sec', cta: 'Segna il riposo', act: 'riposo',
+    body: 'Quante ore, e come ti senti adesso. Il sonno è la leva che muove tutto il resto: segnarlo è il modo per vedere, tra qualche settimana, quanto pesa davvero sulle tue giornate.' },
   { k: 'meditate', when: 'Mattina', title: 'Siediti e non fare niente', dur: '', cta: 'Inizia la pratica', act: 'course',
     body: 'Il passo di oggi del percorso, tutto qui la mattina: la mente è più morbida e si impara a non reagire prima che serva.' },
   { k: 'move', when: 'Pomeriggio', title: 'Cammina dieci minuti', dur: '10 min', cta: 'Fatto, ho camminato', act: 'move',
@@ -81,6 +81,15 @@ export const FLOW = [
   { k: 'letto', when: 'A letto', title: 'Scansione del corpo per dormire', dur: '8 min', cta: 'Ascolta a occhi chiusi', act: 'letto',
     body: 'L’ultima cosa della giornata. Se ti addormenti prima della fine, ha funzionato.' },
 ]
+
+export const RIPOSO = [
+  { k: 'poco', label: 'A pezzi' },
+  { k: 'medio', label: 'Così così' },
+  { k: 'bene', label: 'Riposata' },
+]
+
+// Come si legge quel valore quando va raccontato a parole.
+export const RIPOSO_LABEL = { poco: 'a pezzi', medio: 'così così', bene: 'riposata' }
 
 export const MOVE_SLOTS = [
   { label: 'Fine della giornata', when: 'Fine della giornata', pos: 3 },

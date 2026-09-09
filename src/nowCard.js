@@ -7,7 +7,7 @@ import { FLOW, COURSE, HARD } from './data.js'
 // Finestra oraria di ogni momento. Si sovrappongono di proposito:
 // vince il primo non fatto, in ordine di giornata.
 const WINDOWS = {
-  checkin: [5, 12],
+  riposo: [5, 12],
   meditate: [6, 13],
   move: [11, 19],
   scarico: [16, 21],
@@ -18,7 +18,7 @@ const WINDOWS = {
 
 // La riga di Ora sopra la scheda: la sua voce, non un'etichetta.
 const ORA_LINE = {
-  checkin: 'Prima del telefono, dimmi come stai.',
+  riposo: 'Prima del telefono: come hai dormito?',
   meditate: 'La mattina la mente è più morbida. Ti va di sederti?',
   move: 'Dieci minuti fuori, quando la giornata lo permette.',
   scarico: 'Stai passando dal lavoro a casa. È qui che nascono i tuoi picchi.',

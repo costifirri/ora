@@ -231,7 +231,7 @@ export default function Profilo({ app }) {
           )}
         </div>
 
-        <div className="fineprint">Ora · v7.7</div>
+        <div className="fineprint">Ora · v7.8</div>
       </div>
     </div>
   )

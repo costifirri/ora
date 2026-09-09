@@ -22,7 +22,7 @@ export function todayKey(d = new Date()) {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`
 }
 
-export const EMPTY_DONE = { checkin: false, meditate: false, move: false, connect: false, scarico: false, sera: false, letto: false }
+export const EMPTY_DONE = { riposo: false, meditate: false, move: false, connect: false, scarico: false, sera: false, letto: false }
 
 export const DEFAULT_PERSISTED = {
   onboarded: false,   // la presentazione si fa una volta sola
@@ -132,7 +132,7 @@ export function adoptCloud(cloud) {
 export function emptyDay() {
   return {
     done: { ...EMPTY_DONE }, water: 0, moveWhen: 'Pomeriggio', movePos: 2, moveMoved: false, listened: false,
-    moveMin: 0, sleep: null, meals: { colazione: false, pranzo: false, cena: false },
+    moveMin: 0, sleep: null, rested: null, meals: { colazione: false, pranzo: false, cena: false },
   }
 }
 
