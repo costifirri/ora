@@ -4,6 +4,7 @@ import { buildSystem, askOra, weeklyReport, askOpener, extractMemories, monthCha
 import { loadPersisted, savePersisted, adoptCloud, todayKey, emptyDay, exportAll, freshStart, clearApiKey } from './storage.js'
 import { isConfigured } from './supabase.js'
 import { watchAuth, loadCloud, saveCloud, signOutNow } from './cloud.js'
+import { maturaTutte, nuovaPianta, daBere, specie } from './garden.js'
 import Auth from './screens/Auth.jsx'
 import Benvenuta from './screens/Benvenuta.jsx'
 import Oggi from './screens/Oggi.jsx'
@@ -11,6 +12,7 @@ import Te from './screens/Te.jsx'
 import Checkin from './screens/Checkin.jsx'
 import Riposo from './screens/Riposo.jsx'
 import Suoni from './screens/Suoni.jsx'
+import Giardino from './screens/Giardino.jsx'
 import Pausa from './screens/Pausa.jsx'
 import Pratica from './screens/Pratica.jsx'
 import Session from './screens/Session.jsx'
@@ -240,6 +242,48 @@ export default function App() {
     setS({ screen: key ? 'oggi' : 'pratica', running: false, flowKey: null, courseIdx: null })
     if (ran) flash(key === 'letto' ? 'Buonanotte. Domani il flusso riparte dalla colazione.' : 'Ti sei seduta. È tutto quello che serviva.')
   }
+
+  // --- Giardino ---
+  // Il tempo scorre quando apri: niente timer accesi, niente lavoro di fondo.
+  const apriGiardino = () => {
+    setP(prev => ({ garden: maturaTutte(prev.garden || []) }))
+    setS({ screen: 'giardino' })
+  }
+
+  const tocca = (id, fn) => setP(prev => ({
+    garden: (prev.garden || []).map(x => (x.id === id ? fn(x) : x)),
+  }))
+
+  const piantaNuova = (specieK, nome) => {
+    setP(prev => ({ garden: [...(prev.garden || []), nuovaPianta(specieK, nome)] }))
+    flash(`Piantata. ${specie(specieK).nome} cresce nei giorni veri: torna a vederla.`)
+  }
+
+  const innaffia = id => {
+    tocca(id, x => ({ ...x, ultimaAcqua: Date.now() }))
+    flash('Innaffiata.')
+  }
+
+  const innaffiaTutte = () => {
+    setP(prev => ({ garden: (prev.garden || []).map(x => ({ ...x, ultimaAcqua: Date.now() })) }))
+    flash('Innaffiate tutte.')
+  }
+
+  // Potare toglie il secco e le da' una spinta: e' l'unica cosa che accelera,
+  // e vale solo se c'era davvero qualcosa da togliere.
+  const pota = id => {
+    tocca(id, x => (x.foglieSecche
+      ? { ...x, foglieSecche: false, cresciuta: (x.cresciuta || 0) + 0.5 }
+      : x))
+    flash('Potata. Riparte più pulita.')
+  }
+
+  const estirpa = id => {
+    setP(prev => ({ garden: (prev.garden || []).filter(x => x.id !== id) }))
+    flash('Tolta. Il vaso è di nuovo libero.')
+  }
+
+  const rinomina = (id, nome) => tocca(id, x => ({ ...x, nome: nome.slice(0, 20) }))
 
   // --- Riposo ---
   // Le parole con cui racconto la notte, in un posto solo.
@@ -561,6 +605,8 @@ export default function App() {
     saveLoop, closeLoop, openLoops, dueLoops, openSteps,
     resetAll: () => { setPRaw(freshStart(p.settings)); setS({ screen: 'oggi' }); flash('Ricominciamo da qui.') },
     startSession, stopSession, kindForCourse, logMood, logRest, sleepWeek, sendText, liveAI,
+    apriGiardino, piantaNuova, innaffia, innaffiaTutte, pota, estirpa, rinomina,
+    daBere: daBere(p.garden || []),
     breath: t => breath(t, pattern),
     go: screen => setS({ screen }),
     exportData: () => exportAll(p),
@@ -592,6 +638,7 @@ export default function App() {
       {s.screen === 'checkin' && <Checkin app={app} />}
       {s.screen === 'riposo' && <Riposo app={app} />}
       {s.screen === 'suoni' && <Suoni app={app} />}
+      {s.screen === 'giardino' && <Giardino app={app} />}
       {s.screen === 'pausa' && <Pausa app={app} />}
       {s.screen === 'session' && <Session app={app} />}
       {s.screen === 'sera' && <Sera app={app} />}

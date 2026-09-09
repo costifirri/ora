@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ArrowRight, PenLine, RotateCw, Sparkle, Waves, Square } from 'lucide-react'
+import { ArrowRight, PenLine, RotateCw, Sparkle, Waves, Square, Sprout } from 'lucide-react'
 import { COURSE, MOVE_SLOTS } from '../data.js'
 import { nowCard } from '../nowCard.js'
 import { SUONI, subscribe, stop as fermaSuono } from '../soundscape.js'
@@ -7,7 +7,7 @@ import { SUONI, subscribe, stop as fermaSuono } from '../soundscape.js'
 const ora = ts => new Date(ts).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
 
 export default function Oggi({ app }) {
-  const { p, setS, day, patchDay, markDone, flash, startSession, kindForCourse, name, logged, todayCheckins, weekResponses, dueLoops, openSteps, closeLoop } = app
+  const { p, setS, day, patchDay, markDone, flash, startSession, kindForCourse, name, logged, todayCheckins, weekResponses, dueLoops, openSteps, closeLoop, apriGiardino, daBere } = app
   const card = nowCard({ day, p, logged, todayCheckins, weekResponses })
 
   const [suono, setSuono] = useState(null)
@@ -185,6 +185,26 @@ export default function Oggi({ app }) {
             <span style={{ display: 'block', fontSize: 15, fontWeight: 600 }}>Scrivi nel diario</span>
             <span style={{ display: 'block', fontSize: 12, color: 'var(--muted)' }}>
               {p.seraNotes.length ? 'Un pensiero del giorno, o rileggi le pagine' : 'Un pensiero del giorno, senza doverlo ordinare'}
+            </span>
+          </span>
+          <ArrowRight size={18} strokeWidth={2.75} color="var(--sage-500)" />
+        </button>
+
+        <button className="talk-row" onClick={apriGiardino}>
+          <span style={{
+            width: 38, height: 38, flex: 'none', borderRadius: 999, background: 'var(--sage-100)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <Sprout size={17} strokeWidth={2.75} color="var(--sage-700)" />
+          </span>
+          <span style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
+            <span style={{ display: 'block', fontSize: 15, fontWeight: 600 }}>Il tuo giardino</span>
+            <span style={{ display: 'block', fontSize: 12, color: 'var(--muted)' }}>
+              {(p.garden || []).length === 0
+                ? 'Sei vasi vuoti: pianta qualcosa'
+                : daBere
+                  ? `${daBere === 1 ? 'Una pianta ha' : `${daBere} piante hanno`} bisogno di te`
+                  : `${p.garden.length === 1 ? 'Una pianta sta' : `${p.garden.length} piante stanno`} bene`}
             </span>
           </span>
           <ArrowRight size={18} strokeWidth={2.75} color="var(--sage-500)" />
