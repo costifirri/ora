@@ -31,9 +31,7 @@ export const DEFAULT_PERSISTED = {
   convoLog: [],        // {who, tone, unsaid, ts}
   pauseLog: [],        // {choice, ts} — risposte scelte nel Momento difficile
   loops: [],           // {id, text, kind:'problema'|'preoccupazione', action?, dueAt?, ts, closedAt?}
-  erbacce: [],          // {id, natoIl, x, z} — spuntano da sole
-  ortoVisto: 0,         // ultima volta che hai aperto l'orto
-  garden: [],           // {id, specie, nome, piantataIl, ultimaAcqua, cresciuta, foglieSecche}
+  zen: { tratti: [], sassi: [], piante: [] },  // sabbia rastrellata, sassi, verde
   people: structuredClone(DEFAULT_PEOPLE), // {id, name, meta, opener} — modificabili
 
   // --- Memoria: chi sei, cosa mi hai detto, cosa ho capito ---
@@ -77,8 +75,7 @@ export function loadPersisted() {
       onboarded: data.onboarded ?? true,
       // Una lista vuota è una scelta legittima; solo l'assenza va seminata.
       people: Array.isArray(data.people) ? data.people : structuredClone(DEFAULT_PEOPLE),
-      garden: Array.isArray(data.garden) ? data.garden : [],
-      erbacce: Array.isArray(data.erbacce) ? data.erbacce : [],
+      zen: { tratti: [], sassi: [], piante: [], ...(data.zen || {}) },
       profile: { ...DEFAULT_PERSISTED.profile, ...(data.profile || {}) },
       // La chiave arriva dal cassetto locale. Se è ancora vuoto perché questo
       // dispositivo viene da una versione precedente, la recupero dal vecchio

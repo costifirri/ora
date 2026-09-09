@@ -7,7 +7,7 @@ import { SUONI, subscribe, stop as fermaSuono } from '../soundscape.js'
 const ora = ts => new Date(ts).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
 
 export default function Oggi({ app }) {
-  const { p, setS, day, patchDay, markDone, flash, startSession, kindForCourse, name, logged, todayCheckins, weekResponses, dueLoops, openSteps, closeLoop, apriGiardino, daBere } = app
+  const { p, setS, day, patchDay, markDone, flash, startSession, kindForCourse, name, logged, todayCheckins, weekResponses, dueLoops, openSteps, closeLoop, apriGiardino } = app
   const card = nowCard({ day, p, logged, todayCheckins, weekResponses })
 
   const [suono, setSuono] = useState(null)
@@ -198,13 +198,9 @@ export default function Oggi({ app }) {
             <Sprout size={17} strokeWidth={2.75} color="var(--sage-700)" />
           </span>
           <span style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
-            <span style={{ display: 'block', fontSize: 15, fontWeight: 600 }}>Il tuo orto</span>
+            <span style={{ display: 'block', fontSize: 15, fontWeight: 600 }}>Il giardino</span>
             <span style={{ display: 'block', fontSize: 12, color: 'var(--muted)' }}>
-              {(p.garden || []).length === 0
-                ? 'Terra buona e niente dentro: semina'
-                : daBere
-                  ? `${daBere === 1 ? 'Una pianta ha' : `${daBere} piante hanno`} bisogno di te`
-                  : `${p.garden.length === 1 ? 'Una pianta sta' : `${p.garden.length} piante stanno`} bene`}
+              Sabbia da rastrellare, quando vuoi
             </span>
           </span>
           <ArrowRight size={18} strokeWidth={2.75} color="var(--sage-500)" />
