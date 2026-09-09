@@ -4,7 +4,7 @@ import { buildSystem, askOra, weeklyReport, askOpener, extractMemories, monthCha
 import { loadPersisted, savePersisted, adoptCloud, todayKey, emptyDay, exportAll, freshStart, clearApiKey } from './storage.js'
 import { isConfigured } from './supabase.js'
 import { watchAuth, loadCloud, saveCloud, signOutNow } from './cloud.js'
-import { maturaTutte, nuovaPianta, daBere, specie } from './garden.js'
+import { maturaTutte, nuovaPianta, daBere, specie, erbacceNuove } from './garden.js'
 import Auth from './screens/Auth.jsx'
 import Benvenuta from './screens/Benvenuta.jsx'
 import Oggi from './screens/Oggi.jsx'
@@ -245,10 +245,30 @@ export default function App() {
 
   // --- Giardino ---
   // Il tempo scorre quando apri: niente timer accesi, niente lavoro di fondo.
+  const [ortoNotizie, setOrtoNotizie] = useState(null)
+
   const apriGiardino = () => {
-    setP(prev => ({ garden: maturaTutte(prev.garden || []) }))
+    const ora = Date.now()
+    setP(prev => {
+      const cresciute = maturaTutte(prev.garden || [], ora)
+      const { erbacce, visto } = erbacceNuove(prev.erbacce || [], prev.ortoVisto, ora)
+      return { garden: cresciute, erbacce, ortoVisto: visto }
+    })
     setS({ screen: 'giardino' })
   }
+
+  // Cosa e' successo mentre non c'eri. Si legge dai dati appena maturati.
+  useEffect(() => {
+    if (s.screen !== 'giardino') { setOrtoNotizie(null); return }
+    const piogge = (p.garden || []).reduce((m, x) => Math.max(m, x._piogge || 0), 0)
+    const nuove = (p.erbacce || []).filter(e => Date.now() - e.natoIl < 8 * 86400000).length
+    const pezzi = []
+    if (piogge === 1) pezzi.push('Mentre non c’eri è piovuto una volta: le piante hanno bevuto da sole.')
+    else if (piogge > 1) pezzi.push(`Mentre non c’eri è piovuto ${piogge} volte: le piante hanno bevuto da sole.`)
+    if (nuove) pezzi.push(nuove === 1 ? 'È spuntata un’erbaccia.' : `Sono spuntate ${nuove} erbacce.`)
+    setOrtoNotizie(pezzi.length ? pezzi.join(' ') : null)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [s.screen])
 
   const tocca = (id, fn) => setP(prev => ({
     garden: (prev.garden || []).map(x => (x.id === id ? fn(x) : x)),
@@ -256,7 +276,7 @@ export default function App() {
 
   const piantaNuova = (specieK, nome) => {
     setP(prev => ({ garden: [...(prev.garden || []), nuovaPianta(specieK, nome)] }))
-    flash(`Piantata. ${specie(specieK).nome} cresce nei giorni veri: torna a vederla.`)
+    flash(`Seminata. ${specie(specieK).nome} cresce nei giorni veri: torna a vederla.`)
   }
 
   const innaffia = id => {
@@ -284,6 +304,11 @@ export default function App() {
   }
 
   const rinomina = (id, nome) => tocca(id, x => ({ ...x, nome: nome.slice(0, 20) }))
+
+  const strappa = id => {
+    setP(prev => ({ erbacce: (prev.erbacce || []).filter(e => e.id !== id) }))
+    flash('Via. L’aiuola respira meglio.')
+  }
 
   // --- Riposo ---
   // Le parole con cui racconto la notte, in un posto solo.
@@ -605,7 +630,7 @@ export default function App() {
     saveLoop, closeLoop, openLoops, dueLoops, openSteps,
     resetAll: () => { setPRaw(freshStart(p.settings)); setS({ screen: 'oggi' }); flash('Ricominciamo da qui.') },
     startSession, stopSession, kindForCourse, logMood, logRest, sleepWeek, sendText, liveAI,
-    apriGiardino, piantaNuova, innaffia, innaffiaTutte, pota, estirpa, rinomina,
+    apriGiardino, piantaNuova, innaffia, innaffiaTutte, pota, estirpa, rinomina, strappa, ortoNotizie,
     daBere: daBere(p.garden || []),
     breath: t => breath(t, pattern),
     go: screen => setS({ screen }),

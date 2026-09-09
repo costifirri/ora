@@ -198,10 +198,10 @@ export default function Oggi({ app }) {
             <Sprout size={17} strokeWidth={2.75} color="var(--sage-700)" />
           </span>
           <span style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
-            <span style={{ display: 'block', fontSize: 15, fontWeight: 600 }}>Il tuo giardino</span>
+            <span style={{ display: 'block', fontSize: 15, fontWeight: 600 }}>Il tuo orto</span>
             <span style={{ display: 'block', fontSize: 12, color: 'var(--muted)' }}>
               {(p.garden || []).length === 0
-                ? 'Sei vasi vuoti: pianta qualcosa'
+                ? 'Terra buona e niente dentro: semina'
                 : daBere
                   ? `${daBere === 1 ? 'Una pianta ha' : `${daBere} piante hanno`} bisogno di te`
                   : `${p.garden.length === 1 ? 'Una pianta sta' : `${p.garden.length} piante stanno`} bene`}

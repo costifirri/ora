@@ -8,6 +8,27 @@
 
 const GIORNO = 86400000
 
+// Un caso riproducibile: dallo stesso seme escono sempre gli stessi numeri.
+// Serve perche' ogni pianta sia storta a modo suo, e resti storta uguale ogni
+// volta che riapri — non e' rumore, e' la sua forma.
+export function rng(seme) {
+  let h = 2166136261
+  const t = String(seme)
+  for (let i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0 }
+  return () => { h = (Math.imul(h, 1664525) + 1013904223) >>> 0; return h / 4294967296 }
+}
+
+export const chiaveGiorno = ts => {
+  const d = new Date(ts)
+  const z = n => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}`
+}
+
+// Il tempo che fa non lo decide un tocco: e' gia' deciso, uguale per ogni
+// giorno del calendario. Circa un giorno su quattro piove, e la pioggia
+// innaffia da sola. Un orto vero non dipende solo da te.
+export const piovuto = giorno => rng('pioggia-' + giorno)() < 0.26
+
 export const SPECIE = [
   {
     k: 'lavanda', nome: 'Lavanda', sete: 4,
@@ -71,26 +92,38 @@ export const haSete = (pianta, ora = Date.now()) =>
 // quando fai qualcosa: non serve nessun timer acceso.
 export function matura(pianta, ora = Date.now()) {
   const sp = specie(pianta.specie)
-  const dal = pianta.aggiornataIl || pianta.piantataIl
-  const passati = (ora - dal) / GIORNO
-  if (passati <= 0) return pianta
+  let t = pianta.aggiornataIl || pianta.piantataIl
+  if (t >= ora) return pianta
 
-  // Quanto e' rimasta all'asciutto dentro questo intervallo, all'ingrosso.
-  const seteFine = giorniSenzAcqua(pianta, ora)
-  const seteInizio = Math.max(0, seteFine - passati)
-  const asciutti = Math.max(0, Math.min(passati, seteFine - sp.sete))
-  const bagnati = Math.max(0, passati - asciutti)
+  let cresciuta = pianta.cresciuta || 0
+  let ultimaAcqua = pianta.ultimaAcqua
+  let secche = pianta.foglieSecche
+  let piogge = 0
+  let scoperta = 0   // giorni passati all'asciutto: serve solo per raccontarlo
+
+  // Giorno per giorno, cosi' la pioggia cade al momento giusto invece di
+  // essere spalmata su un intervallo.
+  let giri = 0
+  while (t < ora && giri++ < 400) {
+    const passo = Math.min(GIORNO, ora - t)
+    const frazione = passo / GIORNO
+    const sete = (t - ultimaAcqua) / GIORNO
+    const asciutta = sete > sp.sete
+    cresciuta += frazione * (asciutta ? 0.25 : 1)
+    if (asciutta) scoperta += frazione
+    if (sete > sp.sete * 2) secche = true
+    t += passo
+    if (piovuto(chiaveGiorno(t))) { ultimaAcqua = Math.max(ultimaAcqua, t); piogge++ }
+  }
 
   return {
     ...pianta,
-    // All'asciutto non si ferma: rallenta a un quarto. Aspettare e' diverso
-    // da morire.
-    cresciuta: (pianta.cresciuta || 0) + bagnati + asciutti * 0.25,
-    // Le foglie secche restano finche' non le togli tu.
-    foglieSecche: pianta.foglieSecche || seteFine > sp.sete * 2,
+    cresciuta,
+    ultimaAcqua,
+    foglieSecche: secche,
     aggiornataIl: ora,
-    // Serve solo per raccontartelo al rientro.
-    _dimenticataDa: seteInizio > sp.sete ? Math.round(seteFine) : 0,
+    _piogge: piogge,
+    _asciutta: Math.round(scoperta),
   }
 }
 
@@ -121,3 +154,33 @@ export function comeSta(pianta, ora = Date.now()) {
 
 export const daBere = (giardino, ora = Date.now()) =>
   giardino.filter(p => haSete(p, ora) || p.foglieSecche).length
+
+
+// --- Le erbacce ---
+// Spuntano da sole, come in un orto vero. Non fanno danno: tolgono un po' di
+// spazio e basta. Strapparle e' la cosa piu' soddisfacente che si possa fare
+// qui dentro, e non e' un dovere.
+export const MAX_ERBACCE = 5
+
+export function erbacceNuove(erbacce, visto, ora = Date.now()) {
+  if (!visto) return { erbacce, visto: ora }
+  const fuori = []
+  let t = visto
+  let giri = 0
+  while (t + GIORNO < ora && giri++ < 200) {
+    t += GIORNO
+    const g = chiaveGiorno(t)
+    const r = rng('erba-' + g)
+    if (r() < 0.45 && erbacce.length + fuori.length < MAX_ERBACCE) {
+      fuori.push({ id: `e-${g}-${Math.round(r() * 1e6)}`, natoIl: t, x: 0.08 + r() * 0.84, z: r() })
+    }
+  }
+  return { erbacce: [...erbacce, ...fuori], visto: ora }
+}
+
+// Dove sta una pianta nell'aiuola, se non gliel'ho ancora assegnato.
+export function posto(pianta) {
+  if (pianta.x != null) return { x: pianta.x, z: pianta.z ?? 0.5 }
+  const r = rng(pianta.id)
+  return { x: 0.12 + r() * 0.76, z: r() }
+}

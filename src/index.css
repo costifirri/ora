@@ -507,24 +507,53 @@ input[type='range'] { width: 100%; accent-color: var(--sage-500); height: 36px; 
 }
 
 
-/* --- Il giardino --- */
-.orto { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.vaso {
-  display: flex; flex-direction: column; align-items: center; gap: 2px;
-  padding: 12px 8px 14px; border-radius: 26px; border: 1px solid rgba(32, 30, 29, .10);
-  background: var(--surface); cursor: pointer; min-height: 168px; justify-content: flex-end;
+/* --- L'orto --- */
+.orto-scena {
+  width: 100%; height: auto; display: block; border-radius: 26px;
+  box-shadow: 0 4px 18px rgba(46, 43, 37, .10);
+  -webkit-tap-highlight-color: transparent;
 }
-.vaso.vuoto {
-  justify-content: center; gap: 8px; border-style: dashed;
-  border-color: rgba(122, 138, 94, .45); background: transparent; color: var(--sage-700);
+
+/* Un filo d'aria: ogni pianta con il suo tempo, cosi' non ondeggiano in coro. */
+.dondola { transform-origin: 0px 0px; animation-name: dondola; animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite; animation-direction: alternate; }
+@keyframes dondola { from { transform: rotate(-1.3deg); } to { transform: rotate(1.3deg); } }
+
+.stella { animation: brilla 3.4s ease-in-out infinite alternate; }
+@keyframes brilla { from { opacity: .35; } to { opacity: 1; } }
+
+.farfalla { animation: vola 17s linear infinite; }
+.farfalla.f1 { animation-duration: 23s; animation-delay: -9s; }
+@keyframes vola {
+  0%   { transform: translate(30px, 210px) scale(.9); }
+  25%  { transform: translate(140px, 176px) scale(1); }
+  50%  { transform: translate(250px, 214px) scale(.95); }
+  75%  { transform: translate(150px, 190px) scale(1); }
+  100% { transform: translate(30px, 210px) scale(.9); }
 }
-.vaso-piu { font-size: 26px; line-height: 1; font-family: var(--font-display); }
-.vaso-testo { font-size: 12.5px; }
-.vaso-nome { font-family: var(--font-display); font-size: 15px; margin-top: 2px; }
-.vaso-stato { font-size: 11.5px; line-height: 1.35; text-align: center; }
-.vaso-stato.bene { color: rgba(32, 30, 29, .45); }
-.vaso-stato.sete { color: var(--sage-700); font-weight: 600; }
-.vaso-stato.secca { color: #8c491a; font-weight: 600; }
+
+.lucciola { animation: lampeggia 5s ease-in-out infinite; }
+.lucciola.l0 { transform: translate(70px, 205px); }
+.lucciola.l1 { transform: translate(180px, 232px); animation-delay: -1.6s; }
+.lucciola.l2 { transform: translate(268px, 198px); animation-delay: -3.1s; }
+.lucciola.l3 { transform: translate(120px, 254px); animation-delay: -4.2s; }
+@keyframes lampeggia { 0%, 100% { opacity: 0; } 45%, 55% { opacity: .95; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .dondola, .stella, .farfalla, .lucciola { animation: none; }
+  .lucciola { opacity: .8; }
+}
+
+/* Gli attrezzi: se ne tiene in mano uno alla volta, come in un orto vero. */
+.attrezzi { display: flex; gap: 8px; margin-top: 14px; }
+.attrezzo {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px;
+  min-height: 62px; padding: 9px 4px; border-radius: 20px;
+  border: 1px solid rgba(32, 30, 29, .14); background: var(--surface);
+  color: var(--text); font-size: 11.5px; cursor: pointer;
+}
+.attrezzo.preso { background: var(--sage-500); border-color: var(--sage-500); color: var(--surface); }
+.attrezzo:disabled { opacity: .35; cursor: default; }
 
 .crescita-barra { height: 6px; border-radius: 999px; background: rgba(32, 30, 29, .10); overflow: hidden; }
 .crescita-barra span { display: block; height: 100%; border-radius: 999px; background: var(--sage-500); transition: width .4s; }
