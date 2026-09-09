@@ -1,12 +1,18 @@
-import { ArrowRight, PenLine, RotateCw, Sparkle } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { ArrowRight, PenLine, RotateCw, Sparkle, Waves, Square } from 'lucide-react'
 import { COURSE, MOVE_SLOTS } from '../data.js'
 import { nowCard } from '../nowCard.js'
+import { SUONI, subscribe, stop as fermaSuono } from '../soundscape.js'
 
 const ora = ts => new Date(ts).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
 
 export default function Oggi({ app }) {
   const { p, setS, day, patchDay, markDone, flash, startSession, kindForCourse, name, logged, todayCheckins, weekResponses, dueLoops, openSteps, closeLoop } = app
   const card = nowCard({ day, p, logged, todayCheckins, weekResponses })
+
+  const [suono, setSuono] = useState(null)
+  useEffect(() => subscribe(setSuono), [])
+  const inAscolto = suono?.attivo ? SUONI.find(x => x.k === suono.attivo) : null
 
   const apriRuota = () => setS({ screen: 'checkin', core: null, nuance: null, intensity: 3, checkinTag: null })
 
@@ -183,6 +189,37 @@ export default function Oggi({ app }) {
           </span>
           <ArrowRight size={18} strokeWidth={2.75} color="var(--sage-500)" />
         </button>
+
+        {inAscolto ? (
+          <div className="suona-pill">
+            <span className="onda viva" aria-hidden="true"><span /><span /><span /><span /></span>
+            <span style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
+              <span style={{ display: 'block', fontSize: 15, fontWeight: 600 }}>{inAscolto.label}, adesso</span>
+              <span style={{ display: 'block', fontSize: 12, opacity: .75 }}>Continua anche mentre fai altro</span>
+            </span>
+            <button
+              className="btn-outline"
+              style={{ minHeight: 40, padding: '0 14px', flex: 'none', borderColor: 'rgba(122,138,94,.45)', color: 'var(--sage-700)' }}
+              onClick={() => fermaSuono()}
+            >
+              <Square size={13} strokeWidth={2.75} /> Ferma
+            </button>
+          </div>
+        ) : (
+          <button className="talk-row" onClick={() => setS({ screen: 'suoni' })}>
+            <span style={{
+              width: 38, height: 38, flex: 'none', borderRadius: 999, background: 'var(--sand)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <Waves size={17} strokeWidth={2.75} color="var(--sage-700)" />
+            </span>
+            <span style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
+              <span style={{ display: 'block', fontSize: 15, fontWeight: 600 }}>Suoni per stare</span>
+              <span style={{ display: 'block', fontSize: 12, color: 'var(--muted)' }}>Pioggia, mare, vento, fuoco</span>
+            </span>
+            <ArrowRight size={18} strokeWidth={2.75} color="var(--sage-500)" />
+          </button>
+        )}
 
         {(p.daily?.items || []).map(item => (
           <div key={item.kind} className="daily-card">

@@ -10,6 +10,7 @@ import Oggi from './screens/Oggi.jsx'
 import Te from './screens/Te.jsx'
 import Checkin from './screens/Checkin.jsx'
 import Riposo from './screens/Riposo.jsx'
+import Suoni from './screens/Suoni.jsx'
 import Pausa from './screens/Pausa.jsx'
 import Pratica from './screens/Pratica.jsx'
 import Session from './screens/Session.jsx'
@@ -590,6 +591,7 @@ export default function App() {
       {s.screen === 'pratica' && <Pratica app={app} />}
       {s.screen === 'checkin' && <Checkin app={app} />}
       {s.screen === 'riposo' && <Riposo app={app} />}
+      {s.screen === 'suoni' && <Suoni app={app} />}
       {s.screen === 'pausa' && <Pausa app={app} />}
       {s.screen === 'session' && <Session app={app} />}
       {s.screen === 'sera' && <Sera app={app} />}
