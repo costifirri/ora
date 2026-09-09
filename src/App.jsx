@@ -13,7 +13,7 @@ import Riposo from './screens/Riposo.jsx'
 import Suoni from './screens/Suoni.jsx'
 import Giardino from './screens/Giardino.jsx'
 import Pausa from './screens/Pausa.jsx'
-import Pratica from './screens/Pratica.jsx'
+import Calma from './screens/Calma.jsx'
 import Session from './screens/Session.jsx'
 import Sera from './screens/Sera.jsx'
 import Coach from './screens/Coach.jsx'
@@ -23,10 +23,12 @@ import Calendario from './screens/Calendario.jsx'
 import Diario from './screens/Diario.jsx'
 import Pensiero from './screens/Pensiero.jsx'
 
+// Tre schede, raggruppate per intenzione: cosa succede adesso, cosa ti fa
+// scendere di giro, cosa si ricorda di te.
 const TABS = [
   { id: 'oggi', label: 'Ora' },
+  { id: 'calma', label: 'Calma' },
   { id: 'te', label: 'Te' },
-  { id: 'pratica', label: 'Pratica' },
 ]
 
 const EPHEMERAL = {
@@ -238,7 +240,7 @@ export default function App() {
         return { courseDone, courseStep: next === -1 ? COURSE.length - 1 : next }
       })
     }
-    setS({ screen: key ? 'oggi' : 'pratica', running: false, flowKey: null, courseIdx: null })
+    setS({ screen: key ? 'oggi' : 'calma', running: false, flowKey: null, courseIdx: null })
     if (ran) flash(key === 'letto' ? 'Buonanotte. Domani il flusso riparte dalla colazione.' : 'Ti sei seduta. È tutto quello che serviva.')
   }
 
@@ -575,7 +577,7 @@ export default function App() {
     leave: () => { clearApiKey(); signOutNow().then(() => { setPRaw(loadPersisted()); setS({ screen: 'oggi' }) }) },
   }
 
-  const showTabs = ['oggi', 'te', 'pratica'].includes(s.screen)
+  const showTabs = ['oggi', 'calma', 'te'].includes(s.screen)
 
   // Con gli account attivi, prima di tutto c'è la porta.
   if (user === undefined) return <div className="shell" />
@@ -593,7 +595,7 @@ export default function App() {
     <div className={`shell${s.screen === 'coach' ? ' locked' : ''}`}>
       {s.screen === 'oggi' && <Oggi app={app} />}
       {s.screen === 'te' && <Te app={app} />}
-      {s.screen === 'pratica' && <Pratica app={app} />}
+      {s.screen === 'calma' && <Calma app={app} />}
       {s.screen === 'checkin' && <Checkin app={app} />}
       {s.screen === 'riposo' && <Riposo app={app} />}
       {s.screen === 'suoni' && <Suoni app={app} />}

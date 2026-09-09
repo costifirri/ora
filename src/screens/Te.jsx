@@ -1,4 +1,4 @@
-import { ArrowRight, CalendarDays } from 'lucide-react'
+import { ArrowRight, CalendarDays, PenLine } from 'lucide-react'
 import CorpoSection from '../sections/CorpoSection.jsx'
 import SchemiSection from '../sections/SchemiSection.jsx'
 import LegamiSection from '../sections/LegamiSection.jsx'
@@ -53,6 +53,17 @@ export default function Te({ app }) {
           <span style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
             <span style={{ display: 'block', fontSize: 15, fontWeight: 600 }}>Le tue giornate</span>
             <span style={{ display: 'block', fontSize: 12, color: 'var(--muted)' }}>Rivedi un giorno qualsiasi, com'è andato davvero</span>
+          </span>
+          <ArrowRight size={18} strokeWidth={2.75} color="var(--sage-500)" />
+        </button>
+
+        <button className="talk-row" onClick={() => setS({ screen: 'diario' })}>
+          <span className="tondo sand"><PenLine size={17} strokeWidth={2.75} color="var(--sage-700)" /></span>
+          <span style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
+            <span style={{ display: 'block', fontSize: 15, fontWeight: 600 }}>Il tuo diario</span>
+            <span style={{ display: 'block', fontSize: 12, color: 'var(--muted)' }}>
+              {p.seraNotes.length ? `${p.seraNotes.length} ${p.seraNotes.length === 1 ? 'pagina' : 'pagine'}` : 'Ancora nessuna pagina'}
+            </span>
           </span>
           <ArrowRight size={18} strokeWidth={2.75} color="var(--sage-500)" />
         </button>
