@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { FLOW, COURSE, CUES, HARD, CORE, POSITIVE, GOOD_TAGS, SEED_HELPERS, SEED_TRIGGERS, SEED_WEEK, TRIGGER_TAGS, breath, answerFor, localDaily, RIPOSO_LABEL } from './data.js'
+import { chiave as chiaveLavoro, perOra as lavoroPerOra } from './lavoro.js'
 import { buildSystem, askOra, weeklyReport, askOpener, extractMemories, monthChapter, dailyLine } from './ai.js'
 import { loadPersisted, savePersisted, adoptCloud, todayKey, emptyDay, exportAll, freshStart, clearApiKey } from './storage.js'
 import { isConfigured } from './supabase.js'
@@ -12,6 +13,7 @@ import Checkin from './screens/Checkin.jsx'
 import Riposo from './screens/Riposo.jsx'
 import Suoni from './screens/Suoni.jsx'
 import Giardino from './screens/Giardino.jsx'
+import Lavoro from './screens/Lavoro.jsx'
 import Pausa from './screens/Pausa.jsx'
 import Calma from './screens/Calma.jsx'
 import Session from './screens/Session.jsx'
@@ -244,6 +246,31 @@ export default function App() {
     if (ran) flash(key === 'letto' ? 'Buonanotte. Domani il flusso riparte dalla colazione.' : 'Ti sei seduta. È tutto quello che serviva.')
   }
 
+  // --- Lavoro ---
+  // La giornata e' una per data: ogni tocco aggiorna quella di oggi invece di
+  // impilarne una nuova.
+  const segnaGiornata = patch => setP(prev => {
+    const base = prev.lavoro || { giorni: {}, momenti: [] }
+    const k = chiaveLavoro()
+    return { lavoro: { ...base, giorni: { ...base.giorni, [k]: { ...(base.giorni[k] || {}), ...patch, ts: Date.now() } } } }
+  })
+
+  const segnaMomento = (umore, causa) => {
+    const core = CORE.find(c => c.key === umore)
+    setP(prev => {
+      const base = prev.lavoro || { giorni: {}, momenti: [] }
+      return { lavoro: { ...base, momenti: [...base.momenti, { ts: Date.now(), umore, causa: causa || null, intensita: 3 }] } }
+    })
+    flash(HARD.includes(umore)
+      ? `Segnato: ${umore.toLowerCase()}. Se sale ancora, ci sono i novanta secondi.`
+      : `Segnato: ${umore.toLowerCase()}.`)
+  }
+
+  const togliMomento = ts => setP(prev => {
+    const base = prev.lavoro || { giorni: {}, momenti: [] }
+    return { lavoro: { ...base, momenti: base.momenti.filter(m => m.ts !== ts) } }
+  })
+
   // --- Giardino zen ---
   const apriGiardino = () => setS({ screen: 'giardino' })
 
@@ -324,6 +351,7 @@ export default function App() {
         : 'non ha ancora segnato come sta'),
       '- passi della giornata gia' + "'" + ' fatti: ' + (fatti.length ? fatti.join('; ') : 'nessuno'),
       `- passo del percorso di meditazione: ${p.courseStep + 1} di 7 (${COURSE[p.courseStep].label})`,
+      lavoroPerOra(p) ? '- lavoro: ' + lavoroPerOra(p) : null,
       `- acqua: ${day.water} bicchieri su 8; movimento: ${day.moveMin} minuti`
         + (day.sleep != null ? `; stanotte ha dormito ${day.sleep} ore` : '')
         + (day.rested ? `; al risveglio si sentiva ${RIPOSO_LABEL[day.rested]}` : ''),
@@ -567,7 +595,7 @@ export default function App() {
     saveLoop, closeLoop, openLoops, dueLoops, openSteps,
     resetAll: () => { setPRaw(freshStart(p.settings)); setS({ screen: 'oggi' }); flash('Ricominciamo da qui.') },
     startSession, stopSession, kindForCourse, logMood, logRest, sleepWeek, sendText, liveAI,
-    apriGiardino,
+    apriGiardino, segnaGiornata, segnaMomento, togliMomento,
     breath: t => breath(t, pattern),
     go: screen => setS({ screen }),
     exportData: () => exportAll(p),
@@ -600,6 +628,7 @@ export default function App() {
       {s.screen === 'riposo' && <Riposo app={app} />}
       {s.screen === 'suoni' && <Suoni app={app} />}
       {s.screen === 'giardino' && <Giardino app={app} />}
+      {s.screen === 'lavoro' && <Lavoro app={app} />}
       {s.screen === 'pausa' && <Pausa app={app} />}
       {s.screen === 'session' && <Session app={app} />}
       {s.screen === 'sera' && <Sera app={app} />}

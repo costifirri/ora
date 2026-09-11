@@ -1,4 +1,5 @@
-import { ArrowRight, CalendarDays, PenLine } from 'lucide-react'
+import { ArrowRight, CalendarDays, PenLine, Briefcase } from 'lucide-react'
+import { giornoDi } from '../lavoro.js'
 import CorpoSection from '../sections/CorpoSection.jsx'
 import SchemiSection from '../sections/SchemiSection.jsx'
 import LegamiSection from '../sections/LegamiSection.jsx'
@@ -21,6 +22,7 @@ const fmtDate = ts => new Date(ts).toLocaleDateString('it-IT', { day: 'numeric',
 export default function Te({ app }) {
   const { p, s, setS, setP, generateReport, localWeekSummary, liveAI, pendingMonth, monthName, writeChapter } = app
   const lens = s.teTab || 'come'
+  const oggiLavoro = giornoDi(p.lavoro)
 
   return (
     <div className="screen">
@@ -53,6 +55,17 @@ export default function Te({ app }) {
           <span style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
             <span style={{ display: 'block', fontSize: 15, fontWeight: 600 }}>Le tue giornate</span>
             <span style={{ display: 'block', fontSize: 12, color: 'var(--muted)' }}>Rivedi un giorno qualsiasi, com'è andato davvero</span>
+          </span>
+          <ArrowRight size={18} strokeWidth={2.75} color="var(--sage-500)" />
+        </button>
+
+        <button className="talk-row" onClick={() => setS({ screen: 'lavoro' })}>
+          <span className="tondo sand"><Briefcase size={17} strokeWidth={2.75} color="var(--sage-700)" /></span>
+          <span style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
+            <span style={{ display: 'block', fontSize: 15, fontWeight: 600 }}>Il lavoro</span>
+            <span style={{ display: 'block', fontSize: 12, color: 'var(--muted)' }}>
+              {oggiLavoro ? 'Oggi l’hai segnata' : 'Quanto ci metti, e come ti lascia'}
+            </span>
           </span>
           <ArrowRight size={18} strokeWidth={2.75} color="var(--sage-500)" />
         </button>
