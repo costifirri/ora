@@ -6,6 +6,7 @@ import { loadPersisted, savePersisted, adoptCloud, todayKey, emptyDay, exportAll
 import { isConfigured } from './supabase.js'
 import { watchAuth, loadCloud, saveCloud, signOutNow } from './cloud.js'
 import Auth from './screens/Auth.jsx'
+import NuovaPassword from './screens/NuovaPassword.jsx'
 import Benvenuta from './screens/Benvenuta.jsx'
 import Oggi from './screens/Oggi.jsx'
 import Te from './screens/Te.jsx'
@@ -49,6 +50,7 @@ export default function App() {
   const [s, setSRaw] = useState(EPHEMERAL)
   // undefined = sto ancora guardando chi sei; null = nessun account
   const [user, setUser] = useState(isConfigured ? undefined : null)
+  const [recupero, setRecupero] = useState(false)
   const [syncing, setSyncing] = useState(false)
   const toastT = useRef(null)
   const replyT = useRef(null)
@@ -64,7 +66,11 @@ export default function App() {
   useEffect(() => {
     if (!isConfigured) return
     let stop
-    watchAuth(u => setUser(u))
+    watchAuth((u, evento) => {
+      setUser(u)
+      // Sei arrivata dal link dell'email: prima di tutto, una password nuova.
+      if (evento === 'PASSWORD_RECOVERY') setRecupero(true)
+    })
       .then(fn => { stop = fn })
       // Se il modulo non si carica (offline, rete che blocca), meglio la
       // schermata d'accesso con il suo errore che una pagina bianca per sempre.
@@ -609,6 +615,16 @@ export default function App() {
 
   // Con gli account attivi, prima di tutto c'è la porta.
   if (user === undefined) return <div className="shell" />
+  if (recupero) {
+    return (
+      <div className="shell">
+        <NuovaPassword
+          email={user?.email}
+          onFatto={() => { setRecupero(false); flash('Password cambiata. Da adesso entri con questa.') }}
+        />
+      </div>
+    )
+  }
   if (isConfigured && user === null) {
     return (
       <div className="shell">

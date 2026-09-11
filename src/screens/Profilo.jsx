@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { ArrowLeft } from 'lucide-react'
 import { TONES } from '../data.js'
-import { deleteAccount } from '../cloud.js'
+import { deleteAccount, changePassword } from '../cloud.js'
 import { authError } from '../supabase.js'
 import { MODELS, DEFAULT_MODEL } from '../ai.js'
 
@@ -14,6 +14,9 @@ const INTENTS = [
 
 export default function Profilo({ app }) {
   const { p, setS, setP, name, exportData, user, hasAccounts, leave, flash, resetAll, restartOnboarding } = app
+  const [cambio, setCambio] = useState(false)
+  const [nuova, setNuova] = useState('')
+  const [esito, setEsito] = useState(null)
   const gentle = p.settings.gentle
   const [killing, setKilling] = useState(false)
   const [wiping, setWiping] = useState(false)
@@ -142,6 +145,50 @@ export default function Profilo({ app }) {
             Esporta i dati
           </button>
 
+          {user && (cambio ? (
+            <div style={{ marginTop: 14, background: 'var(--sand)', borderRadius: 24, padding: '16px 18px' }}>
+              <div style={{ fontSize: 13, lineHeight: 1.55, color: 'rgba(32,30,29,.7)', marginBottom: 12 }}>
+                Scegline una nuova. Almeno sei caratteri, e scrivila dove la ritrovi:
+                non posso vederla né recuperarla.
+              </div>
+              <input
+                className="apikey-input" type="password" autoComplete="new-password"
+                value={nuova} onChange={e => { setNuova(e.target.value); setEsito(null) }}
+                placeholder="La nuova password" aria-label="Nuova password"
+              />
+              {esito && (
+                <div style={{ fontSize: 12.5, lineHeight: 1.5, marginTop: 10, color: esito.ok ? 'var(--sage-700)' : '#8c491a' }}>
+                  {esito.testo}
+                </div>
+              )}
+              <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                <button className="btn-outline" style={{ flex: 1, minHeight: 46 }}
+                  onClick={() => { setCambio(false); setNuova(''); setEsito(null) }}>
+                  Lascia stare
+                </button>
+                <button
+                  className="btn-primary" style={{ flex: 1, width: 'auto', minHeight: 46, fontSize: 15 }}
+                  disabled={nuova.length < 6}
+                  onClick={async () => {
+                    try {
+                      await changePassword(nuova)
+                      setCambio(false); setNuova(''); setEsito(null)
+                      flash('Password cambiata.')
+                    } catch (err) {
+                      setEsito({ ok: false, testo: authError(err.message) })
+                    }
+                  }}
+                >
+                  Salva
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button className="step-link" style={{ color: 'var(--sage-700)', marginTop: 10 }} onClick={() => setCambio(true)}>
+              Cambia la password
+            </button>
+          ))}
+
           {!wiping ? (
             <>
               <button
@@ -231,7 +278,7 @@ export default function Profilo({ app }) {
           )}
         </div>
 
-        <div className="fineprint">Ora · v8.5</div>
+        <div className="fineprint">Ora · v8.6</div>
       </div>
     </div>
   )

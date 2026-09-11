@@ -21,7 +21,10 @@ export async function watchAuth(cb) {
   } catch {
     cb(null)
   }
-  const { data } = sb.auth.onAuthStateChange((_evento, sess) => cb(utente(sess)))
+  // L'evento serve: quando arrivi dal link "ho dimenticato la password",
+  // Supabase ti fa entrare ma la password resta quella vecchia. Senza questo
+  // segnale rientri e basta, e la prossima volta sei di nuovo fuori.
+  const { data } = sb.auth.onAuthStateChange((evento, sess) => cb(utente(sess), evento))
   return () => data.subscription.unsubscribe()
 }
 
@@ -37,6 +40,13 @@ export async function signUp(email, password) {
 export async function signIn(email, password) {
   const sb = await loadBackend()
   const { error } = await sb.auth.signInWithPassword({ email: email.trim(), password })
+  if (error) throw error
+}
+
+// Scrive una password nuova su chi e' collegata adesso.
+export async function changePassword(nuova) {
+  const sb = await loadBackend()
+  const { error } = await sb.auth.updateUser({ password: nuova })
   if (error) throw error
 }
 
