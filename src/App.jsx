@@ -17,6 +17,7 @@ import Lavoro from './screens/Lavoro.jsx'
 import Pausa from './screens/Pausa.jsx'
 import Calma from './screens/Calma.jsx'
 import Corpo from './screens/Corpo.jsx'
+import Yoga from './screens/Yoga.jsx'
 import Session from './screens/Session.jsx'
 import Coach from './screens/Coach.jsx'
 import Profilo from './screens/Profilo.jsx'
@@ -661,6 +662,7 @@ export default function App() {
       {s.screen === 'te' && <Te app={app} />}
       {s.screen === 'calma' && <Calma app={app} />}
       {s.screen === 'corpo' && <Corpo app={app} />}
+      {s.screen === 'yoga' && <Yoga app={app} />}
       {s.screen === 'checkin' && <Checkin app={app} />}
       {s.screen === 'riposo' && <Riposo app={app} />}
       {s.screen === 'lavoro' && <Lavoro app={app} />}

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Check, Dumbbell, UtensilsCrossed, ChevronRight } from 'lucide-react'
 import {
-  ALLENAMENTI, CENE, TIPI, allenamento,
+  TUTTI, CENE, TIPI, allenamento,
   proposta, piano, settimanaCorpo, chiave,
 } from '../corpo.js'
 
@@ -18,7 +18,7 @@ const PASTO = [
 ]
 
 export default function Corpo({ app }) {
-  const { p, setP, day, patchDay, flash, segnaAllenamento, segnaPasto, segnaPeso } = app
+  const { p, setP, setS, day, patchDay, flash, segnaAllenamento, segnaPasto, segnaPeso } = app
   const [apri, setApri] = useState(null)      // allenamento aperto per intero
   const [sfoglia, setSfoglia] = useState(null) // 'all' | 'cene' | null
   const [kg, setKg] = useState('')
@@ -44,8 +44,11 @@ export default function Corpo({ app }) {
         {a.blocchi.map(b => <li key={b}>{b}</li>)}
       </ul>
       <button className="btn-primary" style={{ minHeight: 48, fontSize: 15, marginTop: 14 }}
-        onClick={() => { segnaAllenamento(a.k); setApri(null); setSfoglia(null) }}>
-        Fatto, segnalo
+        onClick={() => {
+          if (a.yoga) { setApri(null); setSfoglia(null); setS({ screen: 'yoga', yogaK: a.k }); return }
+          segnaAllenamento(a.k); setApri(null); setSfoglia(null)
+        }}>
+        {a.yoga ? 'Guidami' : 'Fatto, segnalo'}
       </button>
     </div>
   )
@@ -262,7 +265,7 @@ export default function Corpo({ app }) {
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {sfoglia === 'all'
-                ? ALLENAMENTI.map(a => (
+                ? TUTTI.map(a => (
                   <button key={a.k} className="specie-row" onClick={() => { setApri(a); setSfoglia(null) }}>
                     <span style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
                       <span style={{ display: 'block', fontSize: 15, fontWeight: 600 }}>{a.nome}</span>

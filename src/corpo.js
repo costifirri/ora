@@ -11,6 +11,7 @@
 // volte al giorno.
 
 import { HARD } from './data.js'
+import { SEQUENZE, durataTotale } from './yoga.js'
 
 const GIORNO = 86400000
 
@@ -116,28 +117,6 @@ export const ALLENAMENTI = [
     ],
   },
   {
-    k: 'mobilita-schiena', tipo: 'mobilita', nome: 'Sciogliere schiena e anche', min: 15, sforzo: 1,
-    serve: 'Un tappetino',
-    blocchi: [
-      '2 minuti gatto-mucca, lenta',
-      '1 minuto per lato: posizione del piccione',
-      '2 minuti torsione a terra, 1 per lato',
-      '1 minuto cane a testa in giù',
-      '3 minuti seduta, respirando lungo',
-    ],
-  },
-  {
-    k: 'mobilita-collo', tipo: 'mobilita', nome: 'Collo e spalle, dopo il computer', min: 12, sforzo: 1,
-    serve: 'Una sedia',
-    blocchi: [
-      '10 rotazioni lente delle spalle, avanti e indietro',
-      '30 secondi per lato: orecchio verso la spalla',
-      '1 minuto: mani intrecciate, braccia sopra la testa',
-      '2 minuti: apertura del petto contro uno stipite',
-      '3 minuti di respiro lungo, spalle basse',
-    ],
-  },
-  {
     k: 'camminata-dieci', tipo: 'camminata', nome: 'Dieci minuti fuori', min: 10, sforzo: 1,
     serve: 'Solo uscire',
     blocchi: [
@@ -157,7 +136,17 @@ export const ALLENAMENTI = [
   },
 ]
 
-export const allenamento = k => ALLENAMENTI.find(a => a.k === k)
+// Le mobilita' sono le sequenze yoga: stanno scritte in un posto solo, e da
+// qui si vedono come allenamenti.
+const DA_YOGA = SEQUENZE.map(s => ({
+  k: s.k, tipo: 'mobilita', nome: s.nome, min: durataTotale(s), sforzo: 1,
+  serve: s.serve, yoga: true,
+  blocchi: s.posizioni.map(p => `${p.nome} — ${Math.round(p.sec / 60 * 10) / 10 >= 1 ? Math.round(p.sec / 60) + ' min' : p.sec + ' sec'}`),
+}))
+
+export const TUTTI = [...ALLENAMENTI, ...DA_YOGA]
+
+export const allenamento = k => TUTTI.find(a => a.k === k)
 
 // --- Le cene ------------------------------------------------------------
 //
@@ -323,7 +312,7 @@ export function proposta(p, ora = Date.now()) {
     all = null
     perche = `Oggi ti sei già allenata (${f.oggiAll.map(a => allenamento(a.k)?.nome || a.k).join(', ')}). Il recupero è parte dell’allenamento, non una pausa da esso.`
   } else if (f.sonno != null && f.sonno <= 5) {
-    all = allenamento('mobilita-schiena')
+    all = allenamento('yoga-collo')
     perche = `Hai dormito ${f.sonno} ore. Con poco sonno i pesi rendono meno e costano di più: oggi meglio sciogliersi che spingere.`
   } else if (f.lavoroOggi?.carico === 'troppo' || f.intensiOggi >= 2) {
     all = allenamento('camminata-dopocena')
