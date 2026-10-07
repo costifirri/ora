@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { FLOW, COURSE, CUES, HARD, CORE, POSITIVE, GOOD_TAGS, SEED_HELPERS, SEED_TRIGGERS, SEED_WEEK, TRIGGER_TAGS, breath, answerFor, localDaily, RIPOSO_LABEL } from './data.js'
 import { chiave as chiaveLavoro, perOra as lavoroPerOra } from './lavoro.js'
+import { chiave as chiaveCorpo, perOra as corpoPerOra } from './corpo.js'
 import { buildSystem, askOra, weeklyReport, askOpener, extractMemories, monthChapter, dailyLine } from './ai.js'
 import { loadPersisted, savePersisted, adoptCloud, todayKey, emptyDay, exportAll, freshStart, clearApiKey } from './storage.js'
 import { isConfigured } from './supabase.js'
@@ -12,24 +13,22 @@ import Oggi from './screens/Oggi.jsx'
 import Te from './screens/Te.jsx'
 import Checkin from './screens/Checkin.jsx'
 import Riposo from './screens/Riposo.jsx'
-import Suoni from './screens/Suoni.jsx'
-import Giardino from './screens/Giardino.jsx'
 import Lavoro from './screens/Lavoro.jsx'
 import Pausa from './screens/Pausa.jsx'
 import Calma from './screens/Calma.jsx'
+import Corpo from './screens/Corpo.jsx'
 import Session from './screens/Session.jsx'
-import Sera from './screens/Sera.jsx'
 import Coach from './screens/Coach.jsx'
 import Profilo from './screens/Profilo.jsx'
 import Memoria from './screens/Memoria.jsx'
 import Calendario from './screens/Calendario.jsx'
 import Diario from './screens/Diario.jsx'
-import Pensiero from './screens/Pensiero.jsx'
 
 // Tre schede, raggruppate per intenzione: cosa succede adesso, cosa ti fa
 // scendere di giro, cosa si ricorda di te.
 const TABS = [
   { id: 'oggi', label: 'Ora' },
+  { id: 'corpo', label: 'Corpo' },
   { id: 'calma', label: 'Calma' },
   { id: 'te', label: 'Te' },
 ]
@@ -252,6 +251,28 @@ export default function App() {
     if (ran) flash(key === 'letto' ? 'Buonanotte. Domani il flusso riparte dalla colazione.' : 'Ti sei seduta. È tutto quello che serviva.')
   }
 
+  // --- Corpo ---
+  const conCorpo = fn => setP(prev => {
+    const base = prev.corpo || { allenamenti: [], pasti: {}, peso: [], obiettivo: 3 }
+    return { corpo: { ...base, ...fn(base) } }
+  })
+
+  const segnaAllenamento = k => {
+    conCorpo(c => ({ allenamenti: [...c.allenamenti, { k, ts: Date.now() }] }))
+    markDone('move')
+    flash('Segnato. Conta più averlo fatto che averlo fatto bene.')
+  }
+
+  const segnaPasto = valore => conCorpo(c => ({
+    pasti: { ...c.pasti, [chiaveCorpo()]: valore || undefined },
+  }))
+
+  const segnaPeso = kg => {
+    if (!kg || kg < 20 || kg > 300) return
+    conCorpo(c => ({ peso: [...c.peso, { kg, ts: Date.now() }] }))
+    flash('Segnato. Guarda la riga lunga, non il numero di oggi.')
+  }
+
   // --- Lavoro ---
   // La giornata e' una per data: ogni tocco aggiorna quella di oggi invece di
   // impilarne una nuova.
@@ -276,9 +297,6 @@ export default function App() {
     const base = prev.lavoro || { giorni: {}, momenti: [] }
     return { lavoro: { ...base, momenti: base.momenti.filter(m => m.ts !== ts) } }
   })
-
-  // --- Giardino zen ---
-  const apriGiardino = () => setS({ screen: 'giardino' })
 
   // --- Riposo ---
   // Le parole con cui racconto la notte, in un posto solo.
@@ -358,6 +376,7 @@ export default function App() {
       '- passi della giornata gia' + "'" + ' fatti: ' + (fatti.length ? fatti.join('; ') : 'nessuno'),
       `- passo del percorso di meditazione: ${p.courseStep + 1} di 7 (${COURSE[p.courseStep].label})`,
       lavoroPerOra(p) ? '- lavoro: ' + lavoroPerOra(p) : null,
+      corpoPerOra(p) ? '- corpo: ' + corpoPerOra(p) : null,
       `- acqua: ${day.water} bicchieri su 8; movimento: ${day.moveMin} minuti`
         + (day.sleep != null ? `; stanotte ha dormito ${day.sleep} ore` : '')
         + (day.rested ? `; al risveglio si sentiva ${RIPOSO_LABEL[day.rested]}` : ''),
@@ -601,7 +620,8 @@ export default function App() {
     saveLoop, closeLoop, openLoops, dueLoops, openSteps,
     resetAll: () => { setPRaw(freshStart(p.settings)); setS({ screen: 'oggi' }); flash('Ricominciamo da qui.') },
     startSession, stopSession, kindForCourse, logMood, logRest, sleepWeek, sendText, liveAI,
-    apriGiardino, segnaGiornata, segnaMomento, togliMomento,
+    segnaGiornata, togliMomento,
+    segnaAllenamento, segnaPasto, segnaPeso,
     breath: t => breath(t, pattern),
     go: screen => setS({ screen }),
     exportData: () => exportAll(p),
@@ -611,7 +631,7 @@ export default function App() {
     leave: () => { clearApiKey(); signOutNow().then(() => { setPRaw(loadPersisted()); setS({ screen: 'oggi' }) }) },
   }
 
-  const showTabs = ['oggi', 'calma', 'te'].includes(s.screen)
+  const showTabs = ['oggi', 'corpo', 'calma', 'te'].includes(s.screen)
 
   // Con gli account attivi, prima di tutto c'è la porta.
   if (user === undefined) return <div className="shell" />
@@ -640,20 +660,17 @@ export default function App() {
       {s.screen === 'oggi' && <Oggi app={app} />}
       {s.screen === 'te' && <Te app={app} />}
       {s.screen === 'calma' && <Calma app={app} />}
+      {s.screen === 'corpo' && <Corpo app={app} />}
       {s.screen === 'checkin' && <Checkin app={app} />}
       {s.screen === 'riposo' && <Riposo app={app} />}
-      {s.screen === 'suoni' && <Suoni app={app} />}
-      {s.screen === 'giardino' && <Giardino app={app} />}
       {s.screen === 'lavoro' && <Lavoro app={app} />}
       {s.screen === 'pausa' && <Pausa app={app} />}
       {s.screen === 'session' && <Session app={app} />}
-      {s.screen === 'sera' && <Sera app={app} />}
       {s.screen === 'coach' && <Coach app={app} />}
       {s.screen === 'profile' && <Profilo app={app} />}
       {s.screen === 'memoria' && <Memoria app={app} />}
       {s.screen === 'calendario' && <Calendario app={app} />}
       {s.screen === 'diario' && <Diario app={app} />}
-      {s.screen === 'pensiero' && <Pensiero app={app} />}
 
       {s.toast && <div className="toast" role="status">{s.toast}</div>}
 

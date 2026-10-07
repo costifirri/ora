@@ -1,8 +1,5 @@
-import { ArrowRight, Check, Waves, Sprout } from 'lucide-react'
+import { ArrowRight, Check } from 'lucide-react'
 import { COURSE, PATTERNS } from '../data.js'
-import { SUONI, subscribe, stop as fermaSuono } from '../soundscape.js'
-import { useEffect, useState } from 'react'
-import { Square } from 'lucide-react'
 
 // Tutto quello che serve a scendere di giro, in un posto solo.
 //
@@ -12,18 +9,14 @@ import { Square } from 'lucide-react'
 // perche' vuole studiare.
 
 export default function Calma({ app }) {
-  const { p, setS, startSession, kindForCourse, gentle, pattern, apriGiardino } = app
+  const { p, setS, startSession, kindForCourse, gentle, pattern } = app
   const doneN = p.courseDone.filter(Boolean).length
-
-  const [suono, setSuono] = useState(null)
-  useEffect(() => subscribe(setSuono), [])
-  const inAscolto = suono?.attivo ? SUONI.find(x => x.k === suono.attivo) : null
 
   const subito = [
     { label: 'Respiro guidato', meta: `3 minuti · ${PATTERNS[pattern].name}`, start: () => startSession('respiro', 3) },
     { label: 'Scansione del corpo', meta: '5 minuti · per tornare nel corpo', start: () => startSession('scansione', 5) },
     { label: 'Nota le emozioni', meta: '4 minuti · per guardarle senza seguirle', start: () => startSession('nota', 4) },
-    { label: 'Rituale della sera', meta: '6 minuti · respiro, tre righe, una domanda', start: () => setS({ screen: 'sera', seraStep: 0, seraT: 0, seraDraft: '' }) },
+    { label: 'Chiudi la giornata', meta: 'Tre righe e una domanda, nel diario', start: () => setS({ screen: 'diario', sera: true }) },
   ]
 
   return (
@@ -54,43 +47,6 @@ export default function Calma({ app }) {
             ))}
           </div>
         </div>
-
-        <div className="sezione">Dove non devi fare niente</div>
-
-        {inAscolto ? (
-          <div className="suona-pill">
-            <span className="onda viva" aria-hidden="true"><span /><span /><span /><span /></span>
-            <span style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
-              <span style={{ display: 'block', fontSize: 15, fontWeight: 600 }}>{inAscolto.label}, adesso</span>
-              <span style={{ display: 'block', fontSize: 12, opacity: .75 }}>Continua anche mentre fai altro</span>
-            </span>
-            <button
-              className="btn-outline"
-              style={{ minHeight: 40, padding: '0 14px', flex: 'none', borderColor: 'rgba(122,138,94,.45)', color: 'var(--sage-700)' }}
-              onClick={() => fermaSuono()}
-            >
-              <Square size={13} strokeWidth={2.75} /> Ferma
-            </button>
-          </div>
-        ) : (
-          <button className="talk-row" onClick={() => setS({ screen: 'suoni' })}>
-            <span className="tondo sand"><Waves size={17} strokeWidth={2.75} color="var(--sage-700)" /></span>
-            <span style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
-              <span style={{ display: 'block', fontSize: 15, fontWeight: 600 }}>Suoni per stare</span>
-              <span style={{ display: 'block', fontSize: 12, color: 'var(--muted)' }}>Pioggia, mare, vento, fuoco</span>
-            </span>
-            <ArrowRight size={18} strokeWidth={2.75} color="var(--sage-500)" />
-          </button>
-        )}
-
-        <button className="talk-row" onClick={apriGiardino}>
-          <span className="tondo sage"><Sprout size={17} strokeWidth={2.75} color="var(--sage-700)" /></span>
-          <span style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
-            <span style={{ display: 'block', fontSize: 15, fontWeight: 600 }}>Il giardino</span>
-            <span style={{ display: 'block', fontSize: 12, color: 'var(--muted)' }}>Quello che hai fatto, diventato piante</span>
-          </span>
-          <ArrowRight size={18} strokeWidth={2.75} color="var(--sage-500)" />
-        </button>
 
         <div className="sezione">Il percorso</div>
 

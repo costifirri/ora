@@ -8,13 +8,25 @@ const APERTURE = [
   'Se domani ricordassi una cosa di oggi…',
 ]
 
+// Il rituale della sera non e' piu' una schermata a parte: erano due porte per
+// la stessa stanza, e scrivevano gia' nello stesso posto. Qui resta come modo
+// di entrare nel diario, con le sue domande.
+const SERA = [
+  'Cosa mi ha mossa, oggi?',
+  'Cosa ho lasciato a metà?',
+  'Di cosa sono contenta, anche di poco?',
+  'Cosa mi porto a domani?',
+]
+
 const giorno = ts => new Date(ts).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })
 const ora = ts => new Date(ts).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
 
 export default function Diario({ app }) {
-  const { p, setS, writeNote, removeNote, name } = app
+  const { p, s, setS, writeNote, removeNote, name } = app
+  const sera = Boolean(s.sera)
   const [testo, setTesto] = useState('')
   const [apertura] = useState(() => APERTURE[Math.floor(Math.random() * APERTURE.length)])
+  const [domanda, setDomanda] = useState(0)
 
   const parole = testo.trim() ? testo.trim().split(/\s+/).length : 0
 
@@ -37,15 +49,26 @@ export default function Diario({ app }) {
         <button className="btn-back" onClick={() => setS({ screen: 'oggi' })} aria-label="Indietro">
           <ArrowLeft size={18} strokeWidth={2.75} />
         </button>
-        <div className="kicker">Il tuo diario</div>
+        <div className="kicker">{sera ? 'Chiudi la giornata' : 'Il tuo diario'}</div>
       </div>
 
       <div style={{ padding: '4px 0 18px' }}>
-        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 27, lineHeight: 1.1, margin: 0 }}>Scrivi</h1>
+        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 27, lineHeight: 1.1, margin: 0 }}>
+          {sera ? SERA[domanda] : 'Scrivi'}
+        </h1>
         <div className="meta" style={{ marginTop: 6, lineHeight: 1.5 }}>
-          Quando vuoi, quanto vuoi. Non deve essere ordinato né interessante:
-          deve solo uscire dalla testa.
+          {sera
+            ? 'Tre righe bastano. Non deve essere un bilancio: basta una cosa vera.'
+            : 'Quando vuoi, quanto vuoi. Non deve essere ordinato né interessante: deve solo uscire dalla testa.'}
         </div>
+        {sera && (
+          <button
+            className="step-link" style={{ color: 'var(--sage-700)', marginTop: 8 }}
+            onClick={() => setDomanda(d => (d + 1) % SERA.length)}
+          >
+            Un’altra domanda →
+          </button>
+        )}
       </div>
 
       <div className="stack">
@@ -54,7 +77,7 @@ export default function Diario({ app }) {
             className="textarea"
             style={{ background: 'transparent', border: 0, minHeight: 170, padding: 0, fontSize: 15.5 }}
             value={testo}
-            placeholder={apertura}
+            placeholder={sera ? 'Tre righe, non di più…' : apertura}
             aria-label="Scrivi nel diario"
             onChange={e => setTesto(e.target.value)}
           />

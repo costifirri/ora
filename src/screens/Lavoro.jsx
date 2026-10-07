@@ -1,8 +1,7 @@
-import { useState } from 'react'
-import { ArrowLeft, Trash2 } from 'lucide-react'
-import { CORE, HARD, POSITIVE } from '../data.js'
+import { ArrowLeft, Trash2, Sparkle, ArrowRight } from 'lucide-react'
+import { HARD, POSITIVE } from '../data.js'
 import {
-  CARICHI, CARICO_LABEL, CAUSE, ORE, causaLabel,
+  CARICHI, ORE, causaLabel,
   giornoDi, momentiDi, settimana, schemi,
 } from '../lavoro.js'
 
@@ -11,20 +10,11 @@ const ora = ts => new Date(ts).toLocaleTimeString('it-IT', { hour: '2-digit', mi
 const tonoDi = umore => (HARD.includes(umore) ? 'duro' : POSITIVE.includes(umore) ? 'buono' : 'medio')
 
 export default function Lavoro({ app }) {
-  const { p, setS, segnaGiornata, segnaMomento, togliMomento, name } = app
-  const [umore, setUmore] = useState(null)
-  const [causa, setCausa] = useState(null)
-
+  const { p, setS, segnaGiornata, togliMomento, name } = app
   const oggi = giornoDi(p.lavoro) || {}
   const momenti = momentiDi(p.lavoro)
   const sett = settimana(p.lavoro)
   const vista = schemi(p)
-
-  const salvaMomento = () => {
-    if (!umore) return
-    segnaMomento(umore, causa)
-    setUmore(null); setCausa(null)
-  }
 
   return (
     <div className="screen">
@@ -46,63 +36,16 @@ export default function Lavoro({ app }) {
       </div>
 
       <div className="stack">
-        {/* --- Come stai adesso, al lavoro --- */}
-        <div className="card sage">
-          <div className="h-card" style={{ marginBottom: 4 }}>Come stai adesso</div>
-          <div style={{ fontSize: 13, color: 'rgba(32,30,29,.6)', lineHeight: 1.5, marginBottom: 12 }}>
-            Quante volte vuoi, quando cambia. Con l’ora, così a fine mese si vede l’andamento e non una media.
-          </div>
-
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
-            {CORE.map(c => {
-              const on = umore === c.key
-              return (
-                <button
-                  key={c.key} className="chip"
-                  style={{
-                    minHeight: 38, padding: '6px 13px', fontSize: 13,
-                    background: on ? 'var(--sage-500)' : 'var(--surface)',
-                    color: on ? 'var(--surface)' : 'var(--text)',
-                    borderColor: on ? 'var(--sage-500)' : 'rgba(32,30,29,.16)',
-                  }}
-                  onClick={() => setUmore(on ? null : c.key)}
-                >
-                  {c.key}
-                </button>
-              )
-            })}
-          </div>
-
-          {umore && (
-            <>
-              <div style={{ fontSize: 12, fontWeight: 600, color: 'rgba(32,30,29,.5)', marginBottom: 8 }}>
-                Per cosa, se lo sai
-              </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 }}>
-                {CAUSE.map(c => {
-                  const on = causa === c.k
-                  return (
-                    <button
-                      key={c.k} className="chip"
-                      style={{
-                        minHeight: 34, padding: '5px 12px', fontSize: 12.5,
-                        background: on ? 'var(--sage-700)' : 'transparent',
-                        color: on ? 'var(--surface)' : 'var(--text)',
-                        borderColor: on ? 'var(--sage-700)' : 'rgba(32,30,29,.16)',
-                      }}
-                      onClick={() => setCausa(on ? null : c.k)}
-                    >
-                      {c.label}
-                    </button>
-                  )
-                })}
-              </div>
-              <button className="btn-primary" style={{ minHeight: 50, fontSize: 15 }} onClick={salvaMomento}>
-                Segna questo momento
-              </button>
-            </>
-          )}
-        </div>
+        <button className="talk-row" onClick={() => setS({ screen: 'checkin', core: null, nuance: null, intensity: 3, checkinTag: 'lavoro' })}>
+          <span className="tondo sage"><Sparkle size={17} strokeWidth={2.75} color="var(--sage-700)" /></span>
+          <span style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
+            <span style={{ display: 'block', fontSize: 15, fontWeight: 600 }}>Come stai adesso</span>
+            <span style={{ display: 'block', fontSize: 12, color: 'var(--muted)' }}>
+              La ruota di sempre, segnata come lavoro
+            </span>
+          </span>
+          <ArrowRight size={18} strokeWidth={2.75} color="var(--sage-500)" />
+        </button>
 
         {momenti.length > 0 && (
           <div className="card surface">

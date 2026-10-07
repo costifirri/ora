@@ -1,4 +1,4 @@
-import { PenLine, RotateCw, Sparkle, MessageCircle, LifeBuoy } from 'lucide-react'
+import { PenLine, Sparkle, MessageCircle, LifeBuoy } from 'lucide-react'
 import { COURSE, MOVE_SLOTS } from '../data.js'
 import { nowCard } from '../nowCard.js'
 
@@ -7,7 +7,6 @@ import { nowCard } from '../nowCard.js'
 const SCORCIATOIE = [
   { k: 'come', label: 'Come stai', Icona: Sparkle, vai: ({ apriRuota }) => apriRuota() },
   { k: 'duro', label: 'Momento duro', Icona: LifeBuoy, vai: ({ setS }) => setS({ screen: 'pausa', pausaStep: 0, pausaT: 0 }) },
-  { k: 'gira', label: 'Pensiero', Icona: RotateCw, vai: ({ setS }) => setS({ screen: 'pensiero' }) },
   { k: 'ora', label: 'Parla', Icona: MessageCircle, vai: ({ setS }) => setS({ screen: 'coach' }) },
   { k: 'scrivi', label: 'Scrivi', Icona: PenLine, vai: ({ setS }) => setS({ screen: 'diario' }) },
 ]
@@ -25,7 +24,7 @@ export default function Oggi({ app }) {
     else if (card.act === 'course') startSession(kindForCourse(p.courseStep), COURSE[p.courseStep].mins, 'meditate', p.courseStep)
     else if (card.act === 'respiro') startSession('respiro', 3, card.kind === 'step' ? 'scarico' : null)
     else if (card.act === 'letto') startSession('letto', 8, 'letto')
-    else if (card.act === 'sera') setS({ screen: 'sera', seraStep: 0, seraT: 0, seraDraft: '' })
+    else if (card.act === 'sera') setS({ screen: 'diario', sera: true })
     else if (card.act === 'legami') setS({ screen: 'te' })
     else { markDone(card.key); flash('Segnato.') }
   }
