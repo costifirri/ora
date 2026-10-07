@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { FLOW, COURSE, CUES, HARD, CORE, POSITIVE, GOOD_TAGS, SEED_HELPERS, SEED_TRIGGERS, SEED_WEEK, TRIGGER_TAGS, breath, answerFor, localDaily, RIPOSO_LABEL } from './data.js'
+import { FLOW, COURSE, CUES, HARD, CORE, POSITIVE, GOOD_TAGS, SEED_HELPERS, breath, answerFor, localDaily, RIPOSO_LABEL } from './data.js'
 import { chiave as chiaveLavoro, perOra as lavoroPerOra } from './lavoro.js'
 import { chiave as chiaveCorpo, perOra as corpoPerOra } from './corpo.js'
 import { TIPI as IMPEGNI, lunedi, settimana as settCoach, fattiSettimana, lettura, sessioneDovuta } from './coach.js'
@@ -171,52 +171,6 @@ export default function App() {
   const logged = todayCheckins.length ? todayCheckins[todayCheckins.length - 1] : null
 
   // --- Conoscerti: calcolato dallo storico dei check-in ---
-  const spikes = p.checkins.filter(c => HARD.includes(c.core) && c.intensity >= 4)
-  const weekStrip = (() => {
-    if (!p.checkins.length) return { bars: SEED_WEEK, example: true }
-    const labels = ['L', 'M', 'M', 'G', 'V', 'S', 'D']
-    const now = new Date()
-    const monday = new Date(now)
-    monday.setDate(now.getDate() - ((now.getDay() + 6) % 7))
-    const bars = labels.map((day2, i) => {
-      const d = new Date(monday); d.setDate(monday.getDate() + i)
-      const dk = todayKey(d)
-      const n = spikes.filter(c => todayKey(new Date(c.ts)) === dk).length
-      return { day: day2, level: Math.min(3, n) }
-    })
-    return { bars, example: false }
-  })()
-  const triggers = (() => {
-    if (spikes.length < 3) return { list: SEED_TRIGGERS, example: !spikes.length ? 'empty' : 'few' }
-    const win = spikes.slice(-8)
-    // Se i check-in intensi portano i tag "cosa è successo poco prima",
-    // gli inneschi si calcolano da quelli: sono i più fedeli.
-    const tagged = win.filter(c => c.tag)
-    if (tagged.length >= 3) {
-      const list = TRIGGER_TAGS
-        .map(t => ({ label: t.label, n: tagged.filter(c => c.tag === t.key).length, of: win.length, note: t.note }))
-        .filter(t => t.n > 0)
-        .sort((a, b) => b.n - a.n)
-      return { list, example: false, fromTags: true }
-    }
-    const buckets = [
-      { label: 'Sera, dopo le 21', test: h => h >= 21, note: n => `${n === 1 ? 'Un picco' : n + ' picchi'} su ${win.length} dopo cena. È il momento in cui la giornata presenta il conto.` },
-      { label: 'Fine della giornata', test: h => h >= 17 && h < 21, note: n => `${n} su ${win.length} nel passaggio tra lavoro e casa: i tre respiri sono fatti per lì.` },
-      { label: 'Pomeriggio', test: h => h >= 12 && h < 17, note: n => `${n} su ${win.length} nel mezzo della giornata, quasi sempre senza una pausa prima.` },
-      { label: 'Mattina', test: h => h < 12, note: n => `${n} su ${win.length} prima di pranzo: le mattine di corsa restano contratte a lungo.` },
-    ]
-    const list = buckets
-      .map(b => {
-        const n = win.filter(c => b.test(new Date(c.ts).getHours())).length
-        return { label: b.label, n, of: win.length, note: b.note(n) }
-      })
-      .filter(b => b.n > 0)
-      .sort((a, b) => b.n - a.n)
-    return { list, example: false }
-  })()
-
-  // Cosa ti rimette insieme: lo stesso conto degli inneschi, dall'altra parte.
-  // Qui non serve una soglia d'intensità: una calma lieve vale quanto una piena.
   const goodCheckins = p.checkins.filter(c => POSITIVE.includes(c.core))
   const restorers = (() => {
     const tagged = goodCheckins.filter(c => c.tag).slice(-10)
@@ -426,14 +380,13 @@ Ostacolo scelto: ${ostacolo}.` : ''),
       lavoroPerOra(p) ? '- lavoro: ' + lavoroPerOra(p) : null,
       corpoPerOra(p) ? '- corpo: ' + corpoPerOra(p) : null,
       p.coach?.obiettivo ? `- obiettivo che si è data: ${p.coach.obiettivo.testo}` : null,
-      `- acqua: ${day.water} bicchieri su 8; movimento: ${day.moveMin} minuti`
+      `- movimento: ${day.moveMin} minuti`
         + (day.sleep != null ? `; stanotte ha dormito ${day.sleep} ore` : '')
         + (day.rested ? `; al risveglio si sentiva ${RIPOSO_LABEL[day.rested]}` : ''),
       '',
       'Ultimi sette giorni:',
       `- check-in: ${weekCheckins.length}, di cui intensi: ${weekCheckins.filter(c => c.intensity >= 4 && HARD.includes(c.core)).length}`,
       `- volte in cui ha scelto una risposta invece di reagire: ${weekResponses.length}` + (weekResponses.length ? ` (${weekResponses.map(x => x.choice).join('; ')})` : ''),
-      '- inneschi ricorrenti: ' + triggers.list.map(t => `${t.label} (${t.n}/${t.of})`).join(', '),
       p.intention ? `- la regola che si e' data: ${p.intention}` : null,
       restorers.example
         ? '- cosa la rimette insieme: non ancora osservato (troppi pochi check-in buoni con un tag); non darlo per noto'
@@ -657,12 +610,12 @@ Ostacolo scelto: ${ostacolo}.` : ''),
     const intense = wc.filter(c => c.intensity >= 4 && HARD.includes(c.core)).length
     const n = (x, one, many) => `${x} ${x === 1 ? one : many}`
     const buoni = wc.filter(c => POSITIVE.includes(c.core)).length
-    return `${n(wc.length, 'check-in', 'check-in')} questa settimana: ${n(buoni, 'volta stavi bene', 'volte stavi bene')}, ${n(intense, 'picco forte', 'picchi forti')}, ${n(weekResponses.length, 'risposta scelta', 'risposte scelte')} invece di reagire.`
+    return `${n(wc.length, 'check-in', 'check-in')} questa settimana: ${n(buoni, 'volta stavi bene', 'volte stavi bene')}, ${n(weekResponses.length, 'risposta scelta', 'risposte scelte')} invece di reagire.`
   }
 
   const app = {
     p, s, setS, setP, day, patchDay, markDone, gentle, name, pattern,
-    flash, orderedFlow, logged, todayCheckins, weekStrip, triggers, spikes,
+    flash, orderedFlow, logged, todayCheckins,
     weekResponses, restorers, goodCheckins, logPauseChoice, generateReport, localWeekSummary, makeOpener,
     harvestMemories, pendingMonth, monthName, writeChapter, dailyKinds,
     writeNote, removeNote,

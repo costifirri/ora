@@ -161,14 +161,13 @@ export default function Calendario({ app }) {
                     ))}
                   </div>
                 )}
-                {dett.d && (dett.d.moveMin > 0 || dett.d.sleep != null || dett.d.water > 0) && (
+                {dett.d && (dett.d.moveMin > 0 || dett.d.sleep != null) && (
                   <div>
                     <div className="giorno-et">Il corpo</div>
                     <div style={{ fontSize: 14.5, lineHeight: 1.5 }}>
                       {[
                         dett.d.moveMin > 0 && `${dett.d.moveMin} minuti di movimento`,
                         dett.d.sleep != null && `${dett.d.sleep} ore di sonno`,
-                        dett.d.water > 0 && `${dett.d.water} bicchieri`,
                       ].filter(Boolean).join(' · ')}
                     </div>
                   </div>

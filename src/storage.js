@@ -45,7 +45,7 @@ export const DEFAULT_PERSISTED = {
 
   intention: '',       // intenzione settimanale "se X, allora Y"
   weeklyReport: null,  // {text, ts} — ultimo report generato
-  days: {},            // 'YYYY-MM-DD' -> {done, water, moveWhen, movePos, moveMoved, listened, moveMin, sleep, meals}
+  days: {},            // 'YYYY-MM-DD' -> {done, moveWhen, movePos, moveMoved, listened, moveMin, sleep, meals}
   courseStep: 0,
   courseDone: [false, false, false, false, false, false, false],
   qIdx: 0,
@@ -137,7 +137,7 @@ export function adoptCloud(cloud) {
 
 export function emptyDay() {
   return {
-    done: { ...EMPTY_DONE }, water: 0, moveWhen: 'Pomeriggio', movePos: 2, moveMoved: false, listened: false,
+    done: { ...EMPTY_DONE }, moveWhen: 'Pomeriggio', movePos: 2, moveMoved: false, listened: false,
     moveMin: 0, sleep: null, rested: null, meals: { colazione: false, pranzo: false, cena: false },
   }
 }

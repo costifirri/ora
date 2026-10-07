@@ -5,7 +5,7 @@ const volte = (n, of) => `${n} volt${n === 1 ? 'a' : 'e'} su ${of}`
 const fmtDay = ts => new Date(ts).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })
 
 export default function SchemiSection({ app }) {
-  const { setS, weekStrip, triggers, restorers, p, weekResponses, logged } = app
+  const { setS, restorers, p, weekResponses, logged } = app
   const recentNotes = p.seraNotes.slice(-7).reverse()
 
   return (
@@ -23,53 +23,6 @@ export default function SchemiSection({ app }) {
         >
           {logged ? 'Fai un altro check-in' : 'Apri la ruota delle emozioni'}
         </button>
-      </div>
-
-      <div className="card surface">
-        <div className="h-card" style={{ marginBottom: 4 }}>Quando arrivano</div>
-        <div style={{ fontSize: 13, color: 'rgba(32,30,29,.6)', lineHeight: 1.5, marginBottom: 16 }}>
-          {weekStrip.example
-            ? 'Così apparirà la tua settimana: le barre alte sono le sere in cui hai reagito. Comincia con un check-in.'
-            : 'I picchi non arrivano a caso: hanno un’ora e una forma. Le barre alte sono i giorni in cui hai reagito.'}
-        </div>
-        <div className="week-strip">
-          {weekStrip.bars.map((d, i) => (
-            <div key={i} className="week-col">
-              <div className="week-bar-area">
-                <div className="week-bar" style={{ height: 26 + d.level * 22, background: LEVEL_COLORS[d.level] }} />
-              </div>
-              <div style={{ fontSize: 10.5, color: 'rgba(32,30,29,.5)', fontWeight: 600 }}>{d.day}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="card sand">
-        <div className="h-card" style={{ marginBottom: 14 }}>Che cosa li accende</div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {triggers.list.map(t => (
-            <div key={t.label}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, fontSize: 14, marginBottom: 6 }}>
-                <span style={{ fontWeight: 600 }}>{t.label}</span>
-                <span style={{ color: 'var(--muted)', whiteSpace: 'nowrap' }}>{volte(t.n, t.of)}</span>
-              </div>
-              <div className="trigger-track">
-                <div className="trigger-fill" style={{ width: `${Math.round(100 * t.n / t.of)}%` }} />
-              </div>
-              <div style={{ fontSize: 12.5, color: 'rgba(32,30,29,.6)', lineHeight: 1.45 }}>{t.note}</div>
-            </div>
-          ))}
-        </div>
-        {triggers.example && (
-          <div style={{ fontSize: 12, color: 'rgba(32,30,29,.5)', marginTop: 14, lineHeight: 1.5 }}>
-            Un esempio, per ora. Nel check-in, il tocco su “cosa è successo poco prima” rende questi inneschi tuoi.
-          </div>
-        )}
-        {triggers.fromTags && (
-          <div style={{ fontSize: 12, color: 'rgba(32,30,29,.5)', marginTop: 14, lineHeight: 1.5 }}>
-            Calcolato dai tuoi tocchi su “cosa è successo poco prima”. Più lo usi, più è fedele.
-          </div>
-        )}
       </div>
 
       <div className="card sage">

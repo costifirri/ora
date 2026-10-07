@@ -122,6 +122,17 @@ export const QUESTIONS = [
   'Che cosa hai cambiato idea su, di recente?',
 ]
 
+// Cosa c'era intorno, quando e' salita. Non serve piu' a disegnare schemi:
+// serve a Ora, quando le parli, per sapere dove guardare.
+export const TRIGGER_TAGS = [
+  { key: 'lavoro', label: 'Lavoro', note: 'Messaggi, scadenze o riunioni poco prima.' },
+  { key: 'relazioni', label: 'Relazioni', note: 'Uno scambio con qualcuno che ti è rimasto addosso.' },
+  { key: 'fretta', label: 'Fretta', note: 'Ritardi e corse: la giornata parte contratta e resta così.' },
+  { key: 'stanchezza', label: 'Stanchezza', note: 'Poca energia o poco sonno.' },
+  { key: 'telefono', label: 'Telefono', note: 'Il telefono in mano poco prima: notizie, social o messaggi.' },
+  { key: 'altro', label: 'Niente di preciso', note: 'È arrivato senza un innesco chiaro. Anche questo è un dato.' },
+]
+
 // Le emozioni che vale la pena capire quando ci sono, non solo quando mancano.
 export const POSITIVE = ['Calma', 'Serena', 'Gioiosa', 'Carica']
 
@@ -137,23 +148,7 @@ export const GOOD_TAGS = [
   { key: 'altro', label: 'Niente di preciso', note: 'È arrivata senza un motivo chiaro. Succede, ed è un dato anche questo.' },
 ]
 
-// Tag facoltativi del check-in: "cosa è successo poco prima?"
-export const TRIGGER_TAGS = [
-  { key: 'lavoro', label: 'Lavoro', note: 'Messaggi, scadenze o riunioni poco prima del picco.' },
-  { key: 'relazioni', label: 'Relazioni', note: 'Uno scambio con qualcuno che ti è rimasto addosso.' },
-  { key: 'fretta', label: 'Fretta', note: 'Ritardi e corse: la giornata parte contratta e resta così.' },
-  { key: 'stanchezza', label: 'Stanchezza', note: 'Poca energia o poco sonno prima del picco.' },
-  { key: 'telefono', label: 'Telefono', note: 'Il telefono in mano poco prima: notizie, social o messaggi.' },
-  { key: 'altro', label: 'Niente di preciso', note: 'È arrivato senza un innesco chiaro. Anche questo è un dato.' },
-]
 
-// Inneschi di esempio, mostrati finché i check-in non bastano a calcolarli davvero.
-export const SEED_TRIGGERS = [
-  { label: 'Sera, dopo le 21', n: 5, of: 8, note: 'Cinque picchi su otto sono arrivati dopo cena, in giornate senza nessuna pausa.' },
-  { label: 'Messaggi di lavoro fuori orario', n: 4, of: 8, note: 'Il telefono in mano dopo le 20 anticipa il picco di venti minuti, quasi sempre.' },
-  { label: 'Fretta e ritardi', n: 3, of: 8, note: 'Quando esci di casa in ritardo, la mattina resta contratta fino a pranzo.' },
-  { label: 'Sentirti non ascoltata', n: 2, of: 8, note: 'Due volte su tre è con persone a cui non hai detto la cosa vera prima.' },
-]
 
 // Esempi, mostrati finché i tuoi check-in buoni non bastano a calcolarli.
 export const SEED_HELPERS = [
@@ -163,10 +158,6 @@ export const SEED_HELPERS = [
   { label: 'Dieci minuti da sola', note: 'Non è evitare: è rientrare prima di rispondere.' },
 ]
 
-export const SEED_WEEK = [
-  { day: 'L', level: 1 }, { day: 'M', level: 3 }, { day: 'M', level: 0 }, { day: 'G', level: 2 },
-  { day: 'V', level: 1 }, { day: 'S', level: 0 }, { day: 'D', level: 1 },
-]
 
 export const SERA_Q = [
   'Che cosa vorresti portare nella giornata di domani?',
@@ -222,9 +213,6 @@ export const NUTRITION_TIPS = {
     { text: 'Cena calda e semplice.', why: 'Alla sera il corpo chiede di rallentare, non di mettersi a lavorare.' },
     { text: 'Se cerchi dolce dopo cena, guarda cos’hai mangiato a pranzo.', why: 'Spesso non è golosità: è un pranzo troppo leggero che presenta il conto.' },
   ],
-  acqua: [
-    { text: 'Un bicchiere d’acqua, adesso.', why: 'La disidratazione leggera si sente come stanchezza e irritabilità. Verificarlo costa dieci secondi.' },
-  ],
   sempre: [
     { text: 'Tieni qualcosa di pronto in borsa.', why: 'Noci, un frutto: la fame che ti trova fuori casa è quella che decide al posto tuo.' },
     { text: 'Non serve mangiare bene tutti i giorni.', why: 'Serve mangiare abbastanza, quasi tutti i giorni. È una soglia molto più bassa e molto più utile.' },
@@ -239,16 +227,14 @@ function dayIndex(now = new Date()) {
   return Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000)
 }
 
-// ctx: { hour, sleep, spikeToday, water, meals }
+// ctx: { hour, sleep, meals }
 export function dailyTip(ctx, now = new Date()) {
-  const { hour, sleep, spikeToday, water, meals } = ctx
+  const { hour, sleep, meals } = ctx
   let bucket = 'sempre'
   if (sleep != null && sleep <= 5) bucket = 'notte'
-  else if (spikeToday) bucket = 'picco'
   else if (hour < 11 && !meals.colazione) bucket = 'colazione'
   else if (hour >= 11 && hour < 16 && !meals.pranzo) bucket = 'pranzo'
   else if (hour >= 18 && !meals.cena) bucket = 'cena'
-  else if (water <= 2 && hour >= 12) bucket = 'acqua'
   const list = NUTRITION_TIPS[bucket]
   return { ...list[dayIndex(now) % list.length], bucket }
 }
@@ -289,11 +275,11 @@ export function answerFor(text) {
   if (has('trist', 'sola', 'solitud', 'giu', 'giù', 'pian'))
     return 'Grazie per averlo detto. Non c’è niente da sistemare adesso: resta qui un momento. Se vuoi, scrivi tre righe nel rituale della sera — spesso il pensiero pesa meno fuori dalla testa.'
   if (has('lavoro', 'capo', 'collega', 'riunion', 'scadenz', 'ufficio'))
-    return 'Il lavoro è il tuo innesco più frequente: cinque picchi su otto sono arrivati dopo messaggi fuori orario. Chiudi la giornata con i tre respiri prima di rientrare in casa.'
+    return 'Il lavoro torna spesso in quello che mi racconti. Prova a chiudere la giornata con tre respiri prima di rientrare in casa: è il passaggio dove si scarica meglio.'
   if (has('grazie', 'meglio', 'bene', 'calma', 'tranquill'))
     return 'Bene. Nota com’è fatta questa calma, così la riconosci la prossima volta: dove la senti nel corpo?'
   if (t.trim().endsWith('?'))
-    return 'Non ho una risposta pronta, ma ho i tuoi dati: i picchi arrivano di sera, dopo giornate senza pause, e passano prima quando cammini o nomini l’emozione a voce. Da dove vuoi partire?'
+    return 'Non ho una risposta pronta. Quello che so è che le cose passano prima quando cammini o quando dai un nome a quello che senti. Da dove vuoi partire?'
   return 'Ti seguo. Dimmi una cosa in più: che cosa è successo poco prima, e dove lo senti nel corpo?'
 }
 

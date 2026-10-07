@@ -230,22 +230,42 @@ export default function Corpo({ app }) {
           )}
         </div>
 
-        {/* --- Il resto del corpo, che c'era gia' --- */}
         <div className="card surface">
-          <div className="h-card" style={{ marginBottom: 12 }}>Acqua e sonno</div>
-          <div style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 10 }}>
-            {day.water} {day.water === 1 ? 'bicchiere' : 'bicchieri'} su 8
-            {day.sleep != null ? ` · ${day.sleep} ore stanotte` : ''}
+          <div className="h-card" style={{ marginBottom: 4 }}>Sonno e movimento</div>
+          <div style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.5, marginBottom: 12 }}>
+            {day.sleep != null ? `${day.sleep} ore stanotte` : 'Quante ore hai dormito?'}
+            {day.moveMin > 0 ? ` · ${day.moveMin} minuti di movimento` : ''}
           </div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button className="btn-outline" style={{ flex: 1, minHeight: 46 }}
-              onClick={() => patchDay(cur => ({ water: Math.min(8, cur.water + 1) }))}>
-              + un bicchiere
-            </button>
-            <button className="btn-outline" style={{ minHeight: 46 }}
-              onClick={() => patchDay({ water: 0 })}>
-              Azzera
-            </button>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 }}>
+            {[4, 5, 6, 7, 8, 9, 10].map(hr => {
+              const on = day.sleep === hr
+              return (
+                <button key={hr} className="chip"
+                  style={{
+                    minWidth: 46, justifyContent: 'center',
+                    background: on ? 'var(--sage-500)' : 'transparent',
+                    color: on ? 'var(--surface)' : 'var(--text)',
+                    borderColor: on ? 'var(--sage-500)' : 'rgba(32,30,29,.18)',
+                  }}
+                  onClick={() => patchDay(cur => ({ sleep: cur.sleep === hr ? null : hr }))}>
+                  {hr}h
+                </button>
+              )
+            })}
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {[10, 20, 30].map(n => (
+              <button key={n} className="chip" style={{ background: 'transparent', borderColor: 'rgba(32,30,29,.18)' }}
+                onClick={() => patchDay(cur => ({ moveMin: cur.moveMin + n }))}>
+                + {n} min
+              </button>
+            ))}
+            {day.moveMin > 0 && (
+              <button className="chip" style={{ background: 'transparent', borderColor: 'rgba(32,30,29,.18)' }}
+                onClick={() => patchDay({ moveMin: 0 })}>
+                Azzera
+              </button>
+            )}
           </div>
         </div>
 
