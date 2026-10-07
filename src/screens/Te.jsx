@@ -1,5 +1,6 @@
-import { ArrowRight, CalendarDays, PenLine, Briefcase } from 'lucide-react'
+import { ArrowRight, CalendarDays, PenLine, Briefcase, Target } from 'lucide-react'
 import { giornoDi } from '../lavoro.js'
+import { settimana as settCoach } from '../coach.js'
 import CorpoSection from '../sections/CorpoSection.jsx'
 import SchemiSection from '../sections/SchemiSection.jsx'
 import LegamiSection from '../sections/LegamiSection.jsx'
@@ -55,6 +56,21 @@ export default function Te({ app }) {
           <span style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
             <span style={{ display: 'block', fontSize: 15, fontWeight: 600 }}>Le tue giornate</span>
             <span style={{ display: 'block', fontSize: 12, color: 'var(--muted)' }}>Rivedi un giorno qualsiasi, com'è andato davvero</span>
+          </span>
+          <ArrowRight size={18} strokeWidth={2.75} color="var(--sage-500)" />
+        </button>
+
+        <button className="talk-row" onClick={() => setS({ screen: 'obiettivo' })}>
+          <span className="tondo sage"><Target size={17} strokeWidth={2.75} color="var(--sage-700)" /></span>
+          <span style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
+            <span style={{ display: 'block', fontSize: 15, fontWeight: 600 }}>
+              {p.coach?.obiettivo ? p.coach.obiettivo.testo : 'Darti un obiettivo'}
+            </span>
+            <span style={{ display: 'block', fontSize: 12, color: 'var(--muted)' }}>
+              {p.coach?.obiettivo
+                ? `${settCoach(p).centrati} impegni su ${settCoach(p).impegni.length} centrati questa settimana`
+                : 'Uno solo, tradotto in cose che dipendono da te'}
+            </span>
           </span>
           <ArrowRight size={18} strokeWidth={2.75} color="var(--sage-500)" />
         </button>

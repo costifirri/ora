@@ -14,7 +14,7 @@ const SCORCIATOIE = [
 const ora = ts => new Date(ts).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
 
 export default function Oggi({ app }) {
-  const { p, setS, day, patchDay, markDone, flash, startSession, kindForCourse, name, logged, todayCheckins, weekResponses, dueLoops, openSteps, closeLoop } = app
+  const { p, setS, day, patchDay, markDone, flash, startSession, kindForCourse, name, logged, todayCheckins, weekResponses, dueLoops, openSteps, closeLoop, sessioneDovuta } = app
   const card = nowCard({ day, p, logged, todayCheckins, weekResponses })
 
   const apriRuota = () => setS({ screen: 'checkin', core: null, nuance: null, intensity: 3, checkinTag: null })
@@ -109,6 +109,16 @@ export default function Oggi({ app }) {
           <div className="oggi-righe">
             Oggi: {todayCheckins.slice(-3).map(c => `${ora(c.ts)} ${c.word.toLowerCase()}`).join(' · ')}
           </div>
+        )}
+
+        {sessioneDovuta && (
+          <button className="card sand" style={{ textAlign: 'left', border: 0, width: '100%', cursor: 'pointer' }}
+            onClick={() => setS({ screen: 'obiettivo' })}>
+            <div className="kicker" style={{ color: 'var(--sage-700)', marginBottom: 8 }}>La settimana è quasi finita</div>
+            <div style={{ fontSize: 15, lineHeight: 1.55, color: 'rgba(32,30,29,.85)' }}>
+              Guardiamo com’è andata? Dieci minuti, e si riparte da lunedì con una cosa sola da cambiare.
+            </div>
+          </button>
         )}
 
         {dueLoops.map(l => (

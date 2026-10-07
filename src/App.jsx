@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { FLOW, COURSE, CUES, HARD, CORE, POSITIVE, GOOD_TAGS, SEED_HELPERS, SEED_TRIGGERS, SEED_WEEK, TRIGGER_TAGS, breath, answerFor, localDaily, RIPOSO_LABEL } from './data.js'
 import { chiave as chiaveLavoro, perOra as lavoroPerOra } from './lavoro.js'
 import { chiave as chiaveCorpo, perOra as corpoPerOra } from './corpo.js'
-import { buildSystem, askOra, weeklyReport, askOpener, extractMemories, monthChapter, dailyLine } from './ai.js'
+import { TIPI as IMPEGNI, lunedi, settimana as settCoach, fattiSettimana, lettura, sessioneDovuta } from './coach.js'
+import { buildSystem, askOra, coachSettimana, weeklyReport, askOpener, extractMemories, monthChapter, dailyLine } from './ai.js'
 import { loadPersisted, savePersisted, adoptCloud, todayKey, emptyDay, exportAll, freshStart, clearApiKey } from './storage.js'
 import { isConfigured } from './supabase.js'
 import { watchAuth, loadCloud, saveCloud, signOutNow } from './cloud.js'
@@ -18,6 +19,7 @@ import Pausa from './screens/Pausa.jsx'
 import Calma from './screens/Calma.jsx'
 import Corpo from './screens/Corpo.jsx'
 import Yoga from './screens/Yoga.jsx'
+import Obiettivo from './screens/Obiettivo.jsx'
 import Session from './screens/Session.jsx'
 import Coach from './screens/Coach.jsx'
 import Profilo from './screens/Profilo.jsx'
@@ -252,6 +254,51 @@ export default function App() {
     if (ran) flash(key === 'letto' ? 'Buonanotte. Domani il flusso riparte dalla colazione.' : 'Ti sei seduta. È tutto quello che serviva.')
   }
 
+  // --- Obiettivo e coaching ---
+  const conCoach = fn => setP(prev => {
+    const base = prev.coach || { obiettivo: null, impegni: [], sessioni: [], ostacoli: [] }
+    return { coach: { ...base, ...fn(base) } }
+  })
+
+  const scegliObiettivo = o => {
+    conCoach(() => ({
+      obiettivo: { testo: o.titolo, perche: o.perche, k: o.k, dal: Date.now() },
+      impegni: o.impegni.map(k => ({ k, bersaglio: IMPEGNI[k].suggerito })),
+    }))
+    flash('Scelto. Adesso conta quello che fai, non quello che pesi.')
+  }
+
+  const cambiaBersaglio = (k, n) => conCoach(c => ({
+    impegni: c.impegni.map(i => (i.k === k ? { ...i, bersaglio: n } : i)),
+  }))
+
+  // La risposta della revisione: con la chiave la scrive Ora leggendo anche le
+  // tue parole, senza la metto insieme io dai numeri — dicendo che e' cosi'.
+  const coachRisposta = async (ostacolo, testo) => {
+    const fatti = fattiSettimana(p)
+    if (!liveAI) return lettura(p)
+    try {
+      const r = await coachSettimana({
+        apiKey: p.settings.apiKey, settings: p.settings, name: aiName,
+        fatti: fatti + (ostacolo ? `
+Ostacolo scelto: ${ostacolo}.` : ''),
+        risposta: testo || 'Guardiamo la mia settimana.',
+      })
+      return r || lettura(p)
+    } catch {
+      return lettura(p)
+    }
+  }
+
+  const chiudiSessione = (ostacolo, testo, nota) => {
+    const sett = lunedi()
+    conCoach(c => ({
+      sessioni: [...c.sessioni.filter(x => x.settimana !== sett), { ts: Date.now(), settimana: sett, testo, nota }],
+      ostacoli: ostacolo ? [...c.ostacoli, { ts: Date.now(), k: ostacolo, testo }] : c.ostacoli,
+    }))
+    flash('Settimana chiusa. Si riparte da lunedì, non da zero.')
+  }
+
   // --- Corpo ---
   const conCorpo = fn => setP(prev => {
     const base = prev.corpo || { allenamenti: [], pasti: {}, peso: [], obiettivo: 3 }
@@ -378,6 +425,7 @@ export default function App() {
       `- passo del percorso di meditazione: ${p.courseStep + 1} di 7 (${COURSE[p.courseStep].label})`,
       lavoroPerOra(p) ? '- lavoro: ' + lavoroPerOra(p) : null,
       corpoPerOra(p) ? '- corpo: ' + corpoPerOra(p) : null,
+      p.coach?.obiettivo ? `- obiettivo che si è data: ${p.coach.obiettivo.testo}` : null,
       `- acqua: ${day.water} bicchieri su 8; movimento: ${day.moveMin} minuti`
         + (day.sleep != null ? `; stanotte ha dormito ${day.sleep} ore` : '')
         + (day.rested ? `; al risveglio si sentiva ${RIPOSO_LABEL[day.rested]}` : ''),
@@ -623,6 +671,8 @@ export default function App() {
     startSession, stopSession, kindForCourse, logMood, logRest, sleepWeek, sendText, liveAI,
     segnaGiornata, togliMomento,
     segnaAllenamento, segnaPasto, segnaPeso,
+    scegliObiettivo, cambiaBersaglio, coachRisposta, chiudiSessione,
+    sessioneDovuta: sessioneDovuta(p),
     breath: t => breath(t, pattern),
     go: screen => setS({ screen }),
     exportData: () => exportAll(p),
@@ -663,6 +713,7 @@ export default function App() {
       {s.screen === 'calma' && <Calma app={app} />}
       {s.screen === 'corpo' && <Corpo app={app} />}
       {s.screen === 'yoga' && <Yoga app={app} />}
+      {s.screen === 'obiettivo' && <Obiettivo app={app} />}
       {s.screen === 'checkin' && <Checkin app={app} />}
       {s.screen === 'riposo' && <Riposo app={app} />}
       {s.screen === 'lavoro' && <Lavoro app={app} />}

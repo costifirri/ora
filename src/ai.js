@@ -144,6 +144,45 @@ export async function weeklyReport({ apiKey, settings, contextBlock, name }) {
   return (out.content || []).filter(b => b.type === 'text').map(b => b.text).join('').trim()
 }
 
+// --- Coaching --------------------------------------------------------------
+
+// La conversazione settimanale sull'obiettivo. Parte dai numeri veri, non da
+// come ti senti riguardo ai numeri — e non si congratula: riformula.
+export async function coachSettimana({ apiKey, settings, fatti, risposta, name }) {
+  const system = [
+    `Sei Ora, e stai facendo da coach a ${name}. Italiano, dandole del tu.`,
+    'Questo non è un discorso motivazionale: è una revisione onesta della settimana.',
+    'Regole, in ordine di importanza:',
+    '1. Parti dai numeri che ti do. Non inventarne altri e non arrotondare a suo favore.',
+    '2. Non congratularti e non rimproverare. Riformula quello che è successo in modo che lo veda meglio.',
+    '3. Se ha mancato un impegno, la domanda è «cosa si è messo in mezzo», mai «perché non ce l’hai fatta».',
+    '4. Se un ostacolo torna più volte, dillo: è lì che si cambia qualcosa, non nella forza di volontà.',
+    '5. Se un impegno viene mancato ogni settimana, proponi di abbassarlo. Un obiettivo che non centri mai non è ambizioso: è rotto.',
+    '6. Non parlare mai di dieta, calorie o peso come misura del valore. Se l’obiettivo riguarda il peso, parla di comportamenti.',
+    'Formato: due paragrafi brevi, niente titoli, niente elenchi, niente emoji. Chiudi con UNA domanda sola, concreta, sulla settimana che viene.',
+    '',
+    'I numeri di questa settimana:',
+    fatti,
+  ].join('\n')
+
+  const model = modelOf(settings)
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: headers(apiKey),
+    body: JSON.stringify({
+      model,
+      max_tokens: 700,
+      ...tuning(model),
+      system,
+      messages: [{ role: 'user', content: risposta || 'Guardiamo la mia settimana.' }],
+    }),
+  })
+  if (!res.ok) throw new Error(`errore ${res.status}`)
+  const out = await res.json()
+  if (out.stop_reason === 'refusal') return ''
+  return (out.content || []).filter(b => b.type === 'text').map(b => b.text).join('').trim()
+}
+
 // --- Memoria ---------------------------------------------------------------
 
 // Dopo una conversazione, tiene solo quello che vale la pena ricordare fra un

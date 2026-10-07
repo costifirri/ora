@@ -32,6 +32,7 @@ export const DEFAULT_PERSISTED = {
   pauseLog: [],        // {choice, ts} — risposte scelte nel Momento difficile
   loops: [],           // {id, text, kind:'problema'|'preoccupazione', action?, dueAt?, ts, closedAt?}
   corpo: { allenamenti: [], pasti: {}, peso: [], obiettivo: 3 },  // palestra, cene, peso
+  coach: { obiettivo: null, impegni: [], sessioni: [], ostacoli: [] },  // l'obiettivo e le revisioni
   lavoro: { giorni: {}, momenti: [] },   // ore e carico per giorno; stati d'animo con l'ora
   people: structuredClone(DEFAULT_PEOPLE), // {id, name, meta, opener} — modificabili
 
@@ -78,6 +79,7 @@ export function loadPersisted() {
       people: Array.isArray(data.people) ? data.people : structuredClone(DEFAULT_PEOPLE),
       lavoro: { giorni: {}, momenti: [], ...(data.lavoro || {}) },
       corpo: { allenamenti: [], pasti: {}, peso: [], obiettivo: 3, ...(data.corpo || {}) },
+      coach: { obiettivo: null, impegni: [], sessioni: [], ostacoli: [], ...(data.coach || {}) },
       profile: { ...DEFAULT_PERSISTED.profile, ...(data.profile || {}) },
       // La chiave arriva dal cassetto locale. Se è ancora vuoto perché questo
       // dispositivo viene da una versione precedente, la recupero dal vecchio
